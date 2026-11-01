@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#101827">
+    <meta name="description" content="CampusConnect - Find your people and connect on campus.">
+
+    <title>CampusConnect | Find Your People</title>
+
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="./styles.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="./config.js"></script>
+    <script src="./app.js" defer></script>
+</head>
+
+<body>
+
+<header class="topbar">
+    <a class="brand" href="./">
+        <span class="brand-icon">C</span>
+        CampusConnect
+    </a>
+
+    <span class="topbar-tag">UCC EDITION</span>
+</header>
+
+<main class="main-container">
+
+    <!-- AUTHENTICATION -->
+
+    <section id="auth-panel" class="auth-layout">
+
+        <div class="hero-section">
+            <span class="eyebrow">YOUR CAMPUS. YOUR COMMUNITY.</span>
+
+            <h1>Find your people.<br>
+                Build your circle.</h1>
+
+            <p>
+                Meet students who share your interests,
+                discover communities and make meaningful
+                connections on campus.
+            </p>
+
+            <div class="hero-points">
+                <span>✓ Discover students</span>
+                <span>✓ Share interests</span>
+                <span>✓ Build friendships</span>
+            </div>
+        </div>
+
+        <div class="auth-card">
+
+            <div id="signup-view">
+
+                <h2>Create your account</h2>
+                <p class="muted">Start building your campus network.</p>
+
+                <form id="signup-form">
+
+                    <label for="signup-name">Full name</label>
+                    <input id="signup-name"
+                        type="text"
+                        placeholder="Your full name"
+                        minlength="2"
+                        maxlength="80"
+                        required>
+
+                    <label for="signup-email">Email address</label>
+                    <input id="signup-email"
+                        type="email"
+                        placeholder="you@example.com"
+                        required>
+
+                    <label for="signup-university">University</label>
+                    <select id="signup-university" required>
+                        <option value="">Loading universities...</option>
+                    </select>
+
+                    <label for="signup-programme">Programme</label>
+                    <input id="signup-programme"
+                        type="text"
+                        placeholder="e.g. Computer Science"
+                        maxlength="100"
+                        required>
+
+                    <label for="signup-level">Academic level</label>
+                    <select id="signup-level" required>
+                        <option value="Level 100">Level 100</option>
+                        <option value="Level 200">Level 200</option>
+                        <option value="Level 300">Level 300</option>
+                        <option value="Level 400">Level 400</option>
+                        <option value="Postgraduate">Postgraduate</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label for="signup-password">Password</label>
+                    <input id="signup-password"
+                        type="password"
+                        placeholder="At least 8 characters"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required>
+
+                    <button type="submit" class="primary-btn">
+                        Create account
+                    </button>
+
+                </form>
+
+                <p class="switch-text">
+                    Already have an account?
+                    <button type="button" id="show-login" class="text-btn">
+                        Log in
+                    </button>
+                </p>
+
+            </div>
+
+            <div id="login-view" hidden>
+
+                <h2>Welcome back</h2>
+                <p class="muted">Log in to your campus community.</p>
+
+                <form id="login-form">
+
+                    <label for="login-email">Email address</label>
+                    <input id="login-email"
+                        type="email"
+                        placeholder="Your email"
+                        autocomplete="email"
+                        required>
+
+                    <label for="login-password">Password</label>
+                    <input id="login-password"
+                        type="password"
+                        placeholder="Your password"
+                        autocomplete="current-password"
+                        required>
+
+                    <button type="submit" class="primary-btn">
+                        Log in
+                    </button>
+
+                </form>
+
+                <p class="switch-text">
+                    New to CampusConnect?
+                    <button type="button" id="show-signup" class="text-btn">
+                        Create account
+                    </button>
+                </p>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- AUTHENTICATED DASHBOARD -->
+
+    <section id="dashboard" hidden>
+
+        <div class="dashboard-heading">
+            <div>
+                <span class="eyebrow">YOUR CAMPUS COMMUNITY</span>
+                <h1>Welcome, <span id="student-name">Student</span>!</h1>
+                <p class="muted">Your journey to meaningful connections starts here.</p>
+            </div>
+
+            <button id="logout-btn" class="secondary-btn">
+                Log out
+            </button>
+        </div>
+
+        <div class="dashboard-grid">
+
+            <section class="dashboard-card profile-card">
+
+                <div class="avatar" id="student-avatar">S</div>
+
+                <h2 id="profile-name">Student</h2>
+
+                <p id="profile-programme" class="muted"></p>
+                <p id="profile-university" class="muted"></p>
+                <p id="profile-level" class="muted"></p>
+
+                <div class="privacy-option">
+                    <label for="discoverable-toggle">
+                        Allow other students to discover my profile
+                    </label>
+                    <input type="checkbox"
+                        id="discoverable-toggle"
+                        checked>
+                </div>
+
+                <button id="save-profile-btn" class="secondary-btn">
+                    Save profile settings
+                </button>
+
+            </section>
+
+            <section class="dashboard-card interests-card">
+
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">PERSONALIZE YOUR EXPERIENCE</span>
+                        <h2>Your interests</h2>
+                        <p class="muted">
+                            Select up to 10 interests to improve
+                            your future friend recommendations.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="interest-options" class="interest-options">
+                    Loading interests...
+                </div>
+
+                <p class="muted small-text">
+                    You can change your interests later.
+                </p>
+
+                <button id="save-interests-btn" class="primary-btn">
+                    Save my interests
+                </button>
+
+            </section>
+
+        </div>
+
+        <div class="coming-soon">
+            <h2>Your next connection is waiting.</h2>
+            <p>
+                Student discovery, friend matching,
+                messaging and communities are coming next.
+            </p>
+        </div>
+
+    </section>
+
+    <div id="global-status" class="status" role="status" aria-live="polite"></div>
+
+</main>
+
+<footer>
+    <p>CampusConnect © 2026. Connecting students, building communities.</p>
+</footer>
+
+</body>
+  </html>
+                                                     
