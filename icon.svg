@@ -1,0 +1,21 @@
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 512 512">
+
+    <rect width="512" height="512"
+          rx="110" fill="#7357F6"/>
+
+    <circle cx="256" cy="165" r="70"
+            fill="#FFFFFF"/>
+
+    <circle cx="115" cy="225" r="48"
+            fill="#FFFFFF" opacity=".8"/>
+
+    <circle cx="397" cy="225" r="48"
+            fill="#FFFFFF" opacity=".8"/>
+
+    <path d="M105 410c0-85 65-135 151-135s151 50 151 135"
+          fill="none" stroke="#FFFFFF"
+          stroke-width="55" stroke-linecap="round"/>
+
+</svg>
