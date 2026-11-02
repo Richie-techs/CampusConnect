@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Groups | CampusConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  :root {
+    --brand: #7357F6;
+    --brand-dark: #5a40d8;
+    --brand-tint: #efebff;
+    --ink: #1d1a2e;
+    --muted: #6b6880;
+    --line: #e4e1f0;
+    --bg: #f8f7fc;
+    --card: #ffffff;
+    --ok: #17845a;
+    --ok-tint: #e2f5ec;
+  }
+  * { box-sizing: border-box; }
+  html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "DM Sans", system-ui, sans-serif; line-height: 1.5; }
+  h1, h2, h3 { font-family: "Bricolage Grotesque", "DM Sans", sans-serif; margin: 0; letter-spacing: -0.01em; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 80px; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .head h1 { font-size: 1.9rem; line-height: 1.1; }
+  .head p { margin: 6px 0 0; color: var(--muted); }
+
+  .btn { border: 0; border-radius: 12px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-primary:hover { background: var(--brand-dark); }
+  .btn-ghost { background: var(--brand-tint); color: var(--brand-dark); }
+  .btn-ok { background: var(--ok-tint); color: var(--ok); }
+  .btn-sm { padding: 8px 14px; font-size: .9rem; }
+
+  .search { width: 100%; border: 1.5px solid var(--line); background: var(--card); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+  .search:focus { border-color: var(--brand); outline: none; }
+
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; }
+  .chip { flex: none; border: 1.5px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-size: .9rem; }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+  .tabs { display: flex; gap: 4px; margin: 14px 0; background: #ece9f7; padding: 4px; border-radius: 12px; }
+  .tab { flex: 1; border: 0; background: transparent; padding: 8px; border-radius: 9px; cursor: pointer; font-weight: 600; color: var(--muted); }
+  .tab[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 2px rgba(29,26,46,.12); }
+
+  .list { display: grid; gap: 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 10px; }
+  .card.joined { border-left: 5px solid var(--brand); }
+  .card-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .card h3 { font-size: 1.15rem; }
+  .course { color: var(--brand-dark); font-size: .85rem; font-weight: 600; }
+  .desc { margin: 0; color: var(--muted); font-size: .95rem; }
+  .meta { display: grid; gap: 4px; font-size: .9rem; }
+  .meta span { color: var(--muted); }
+  .meta strong { font-weight: 600; color: var(--ink); }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .people { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--muted); }
+  .avatars { display: flex; }
+  .avatars i { width: 26px; height: 26px; border-radius: 50%; background: var(--brand-tint); color: var(--brand-dark); border: 2px solid var(--card); margin-left: -8px; display: grid; place-items: center; font-style: normal; font-size: .7rem; font-weight: 700; }
+  .avatars i:first-child { margin-left: 0; }
+  .full { font-size: .8rem; color: #a2410f; font-weight: 600; }
+
+  .empty { text-align: center; padding: 36px 16px; background: var(--card); border: 1.5px dashed var(--line); border-radius: 16px; }
+  .empty h3 { margin-bottom: 6px; }
+  .empty p { color: var(--muted); margin: 0 0 14px; }
+
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 16px; display: grid; gap: 12px; }
+  .panel label { display: grid; gap: 4px; font-size: .9rem; font-weight: 600; }
+  .panel input, .panel select, .panel textarea { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px 12px; font-weight: 400; background: #fff; }
+  .panel input:focus, .panel select:focus, .panel textarea:focus { border-color: var(--brand); outline: none; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .err { color: #b3261e; font-size: .85rem; font-weight: 500; }
+  .actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 999px; font-size: .9rem; z-index: 10; max-width: 90vw; }
+  @media (prefers-reduced-motion: no-preference) { .toast { animation: pop .18s ease-out; } }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, 8px); } }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useMemo, useEffect } = React;
+
+const CATEGORIES = ["Programming", "Math", "Exam prep", "Projects"];
+
+/* Demo data. Replace with a Supabase query (see notes at the bottom). */
+const SEED = [
+  { id: 1, name: "Python Practice Circle", course: "CS 101", category: "Programming",
+    desc: "Work through exercises together and review each other's code.",
+    when: "Tue & Thu, 4:00 PM", where: "Sam Jonah Library, 2nd floor",
+    members: ["Abena Mensah", "Kwame Boateng", "Efua Quaye", "Yaw Asare"], max: 8, joined: false },
+  { id: 2, name: "Calculus Problem Solvers", course: "MATH 102", category: "Math",
+    desc: "Past questions, step by step. Bring the ones you got stuck on.",
+    when: "Wed, 5:30 PM", where: "Science Block, Room 4",
+    members: ["Joseph Kofi", "Ama Serwaa", "Nana Yeboah"], max: 6, joined: false },
+  { id: 3, name: "ML Study Group", course: "Self-study", category: "Projects",
+    desc: "Andrew Ng's course plus small projects. Beginners welcome.",
+    when: "Sat, 10:00 AM", where: "Online (Google Meet)",
+    members: ["Sarah Koomson", "Daniel Mensah"], max: 10, joined: false },
+  { id: 4, name: "Discrete Maths Revision", course: "CS 103", category: "Exam prep",
+    desc: "Logic, sets and graphs, working toward the end-of-semester exam.",
+    when: "Mon, 6:00 PM", where: "Hall 7 common room",
+    members: ["Esi Appiah", "Kojo Antwi", "Abigail Tetteh", "Isaac Owusu", "Naa Lamle", "Kofi Darko"], max: 6, joined: false },
+];
+
+const initials = (n) => n.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase();
+const ME = "You";
+
+function GroupCard({ g, onToggle }) {
+  const full = !g.joined && g.members.length >= g.max;
+  const shown = g.members.slice(0, 4);
+  return (
+    <article className={"card" + (g.joined ? " joined" : "")}>
+      <div className="card-top">
+        <div>
+          <div className="course">{g.course}</div>
+          <h3>{g.name}</h3>
+        </div>
+      </div>
+      <p className="desc">{g.desc}</p>
+      <div className="meta">
+        <div><span>When: </span><strong>{g.when}</strong></div>
+        <div><span>Where: </span><strong>{g.where}</strong></div>
+      </div>
+      <div className="card-foot">
+        <div className="people">
+          <div className="avatars" aria-hidden="true">
+            {shown.map(m => <i key={m}>{m === ME ? "ME" : initials(m)}</i>)}
+          </div>
+          <span>{g.members.length}/{g.max} members</span>
+          {full && <span className="full">Full</span>}
+        </div>
+        <button
+          className={"btn btn-sm " + (g.joined ? "btn-ok" : "btn-primary")}
+          disabled={full}
+          style={full ? { opacity: .5, cursor: "not-allowed" } : undefined}
+          onClick={() => onToggle(g.id)}
+          aria-label={(g.joined ? "Leave " : "Join ") + g.name}
+        >
+          {g.joined ? "Joined" : "Join group"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function CreateForm({ onCreate, onCancel }) {
+  const [f, setF] = useState({ name: "", course: "", category: CATEGORIES[0], desc: "", when: "", where: "", max: 8 });
+  const [err, setErr] = useState("");
+  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  const submit = (e) => {
+    e.preventDefault();
+    if (!f.name.trim() || !f.when.trim() || !f.where.trim()) {
+      setErr("Add a name, a meeting time and a place.");
+      return;
+    }
+    onCreate({ ...f, name: f.name.trim(), course: f.course.trim() || "General", max: Math.max(2, Math.min(30, Number(f.max) || 8)) });
+  };
+
+  return (
+    <form className="panel" onSubmit={submit}>
+      <h2 style={{ fontSize: "1.2rem" }}>Create a study group</h2>
+      <label>Group name
+        <input value={f.name} onChange={set("name")} placeholder="e.g. Python Practice Circle" maxLength={60} />
+      </label>
+      <div className="row">
+        <label>Course
+          <input value={f.course} onChange={set("course")} placeholder="CS 101" maxLength={20} />
+        </label>
+        <label>Topic
+          <select value={f.category} onChange={set("category")}>
+            {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+          </select>
+        </label>
+      </div>
+      <label>What will you work on?
+        <textarea rows={2} value={f.desc} onChange={set("desc")} maxLength={140} />
+      </label>
+      <div className="row">
+        <label>When
+          <input value={f.when} onChange={set("when")} placeholder="Fri, 3:00 PM" maxLength={40} />
+        </label>
+        <label>Max members
+          <input type="number" min="2" max="30" value={f.max} onChange={set("max")} />
+        </label>
+      </div>
+      <label>Where
+        <input value={f.where} onChange={set("where")} placeholder="Library, Room 3, or an online link" maxLength={60} />
+      </label>
+      {err && <div className="err" role="alert">{err}</div>}
+      <div className="actions">
+        <button type="button" className="btn btn-ghost" onClick={onCancel}>Cancel</button>
+        <button type="submit" className="btn btn-primary">Create group</button>
+      </div>
+    </form>
+  );
+}
+
+function App() {
+  const [groups, setGroups] = useState(SEED);
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("All");
+  const [tab, setTab] = useState("all");
+  const [creating, setCreating] = useState(false);
+  const [toast, setToast] = useState("");
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 2200);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const toggle = (id) => {
+    const g = groups.find(x => x.id === id);
+    setGroups(groups.map(x => x.id !== id ? x : {
+      ...x,
+      joined: !x.joined,
+      members: x.joined ? x.members.filter(m => m !== ME) : [ME, ...x.members],
+    }));
+    setToast(g.joined ? "You left " + g.name : "You joined " + g.name);
+  };
+
+  const create = (data) => {
+    const g = { ...data, id: Date.now(), members: [ME], joined: true };
+    setGroups([g, ...groups]);
+    setCreating(false);
+    setTab("mine");
+    setToast("Study group created");
+  };
+
+  const visible = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return groups.filter(g =>
+      (tab === "all" || g.joined) &&
+      (cat === "All" || g.category === cat) &&
+      (!s || (g.name + " " + g.course + " " + g.desc).toLowerCase().includes(s))
+    );
+  }, [groups, q, cat, tab]);
+
+  const mineCount = groups.filter(g => g.joined).length;
+
+  return (
+    <main className="wrap">
+      <header className="head">
+        <div>
+          <h1>Study Groups</h1>
+          <p>Find your people. Share knowledge. Achieve more.</p>
+        </div>
+        {!creating && <button className="btn btn-primary" onClick={() => setCreating(true)}>Create group</button>}
+      </header>
+
+      {creating && <CreateForm onCreate={create} onCancel={() => setCreating(false)} />}
+
+      <input className="search" type="search" placeholder="Search by name, course or topic"
+        value={q} onChange={e => setQ(e.target.value)} aria-label="Search study groups" />
+
+      <div className="chips" role="group" aria-label="Filter by topic">
+        {["All", ...CATEGORIES].map(c => (
+          <button key={c} className="chip" aria-pressed={cat === c} onClick={() => setCat(c)}>{c}</button>
+        ))}
+      </div>
+
+      <div className="tabs" role="tablist">
+        <button className="tab" role="tab" aria-selected={tab === "all"} onClick={() => setTab("all")}>Discover</button>
+        <button className="tab" role="tab" aria-selected={tab === "mine"} onClick={() => setTab("mine")}>My groups ({mineCount})</button>
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="empty">
+          {tab === "mine" && !q && cat === "All" ? (
+            <>
+              <h3>You haven't joined a group yet</h3>
+              <p>Join one from Discover, or start your own.</p>
+              <button className="btn btn-primary" onClick={() => setTab("all")}>Browse groups</button>
+            </>
+          ) : (
+            <>
+              <h3>No groups match</h3>
+              <p>Try a different search, or create the group you're looking for.</p>
+              <button className="btn btn-primary" onClick={() => setCreating(true)}>Create group</button>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="list">
+          {visible.map(g => <GroupCard key={g.id} g={g} onToggle={toggle} />)}
+        </div>
+      )}
+
+      {toast && <div className="toast" role="status">{toast}</div>}
+    </main>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+/* --- Supabase notes ---
+   groups table:        id, name, course, category, description, meets_at, location, max_members, created_by
+   group_members table: group_id, user_id (primary key on both)
+   Load:  supabase.from("groups").select("*, group_members(user_id)")
+   Join:  supabase.from("group_members").insert({ group_id, user_id })
+   Leave: supabase.from("group_members").delete().match({ group_id, user_id })
+   Add RLS so users can only insert/delete their own membership rows.
+*/
+</script>
+</body>
+  </html>
