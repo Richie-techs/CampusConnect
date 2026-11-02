@@ -316,14 +316,23 @@
         }
     });
 
+   
     // ==========================================
-    // LOGOUT
+    // LOGOUT - IMPROVED VERSION
     // ==========================================
 
-    $("logout-button")?.addEventListener("click", async () => {
-        const button = $("logout-button");
+    document.addEventListener("click", async (event) => {
+        const button = event.target.closest("#logout-button");
 
-        if (button) button.disabled = true;
+        if (!button) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (button.disabled) return;
+
+        button.disabled = true;
+        button.textContent = "Logging out...";
 
         try {
             const { error } = await db.auth.signOut();
@@ -340,12 +349,24 @@
             );
 
         } catch (error) {
-            showStatus(error.message, "error");
+            console.error("Logout failed:", error);
+
+            alert(
+                "Logout failed: " +
+                (error.message || "Please try again.")
+            );
 
         } finally {
-            if (button) button.disabled = false;
+            button.disabled = false;
+            button.innerHTML =
+                '<i data-lucide="log-out"></i>';
+
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
         }
     });
+
 
     // ==========================================
     // SWITCH LOGIN AND REGISTRATION
