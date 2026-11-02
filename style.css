@@ -1003,3 +1003,6 @@ a {
     }
 
 }
+body:not(.authenticated) .mobile-bottom-nav {
+    display: none !important;
+}
