@@ -1,257 +1,565 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta name="theme-color" content="#101827">
-    <meta name="description" content="CampusConnect - Find your people and connect on campus.">
+    <meta name="theme-color" content="#7357F6">
+    <meta name="description" content="CampusConnect - Connect with students, make friends and learn together.">
 
-    <title>CampusConnect | Find Your People</title>
+    <title>CampusConnect | Connect. Learn. Belong.</title>
 
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="icon" href="./icon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.webmanifest">
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="./config.js"></script>
-    <script src="./app.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
 
-<header class="topbar">
-    <a class="brand" href="./">
-        <span class="brand-icon">C</span>
-        CampusConnect
-    </a>
+<div class="app-container">
 
-    <span class="topbar-tag">UCC EDITION</span>
-</header>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
 
-<main class="main-container">
-
-    <!-- AUTHENTICATION -->
-
-    <section id="auth-panel" class="auth-layout">
-
-        <div class="hero-section">
-            <span class="eyebrow">YOUR CAMPUS. YOUR COMMUNITY.</span>
-
-            <h1>Find your people.<br>
-                Build your circle.</h1>
-
-            <p>
-                Meet students who share your interests,
-                discover communities and make meaningful
-                connections on campus.
-            </p>
-
-            <div class="hero-points">
-                <span>✓ Discover students</span>
-                <span>✓ Share interests</span>
-                <span>✓ Build friendships</span>
+        <a href="#" class="brand">
+            <div class="brand-icon">
+                <i data-lucide="graduation-cap"></i>
             </div>
-        </div>
+            <span>Campus<span class="brand-highlight">Connect</span></span>
+        </a>
 
-        <div class="auth-card">
-
-            <div id="signup-view">
-
-                <h2>Create your account</h2>
-                <p class="muted">Start building your campus network.</p>
-
-                <form id="signup-form">
-
-                    <label for="signup-name">Full name</label>
-                    <input id="signup-name"
-                        type="text"
-                        placeholder="Your full name"
-                        minlength="2"
-                        maxlength="80"
-                        required>
-
-                    <label for="signup-email">Email address</label>
-                    <input id="signup-email"
-                        type="email"
-                        placeholder="you@example.com"
-                        required>
-
-                    <label for="signup-university">University</label>
-                    <select id="signup-university" required>
-                        <option value="">Loading universities...</option>
-                    </select>
-
-                    <label for="signup-programme">Programme</label>
-                    <input id="signup-programme"
-                        type="text"
-                        placeholder="e.g. Computer Science"
-                        maxlength="100"
-                        required>
-
-                    <label for="signup-level">Academic level</label>
-                    <select id="signup-level" required>
-                        <option value="Level 100">Level 100</option>
-                        <option value="Level 200">Level 200</option>
-                        <option value="Level 300">Level 300</option>
-                        <option value="Level 400">Level 400</option>
-                        <option value="Postgraduate">Postgraduate</option>
-                        <option value="Other">Other</option>
-                    </select>
-
-                    <label for="signup-password">Password</label>
-                    <input id="signup-password"
-                        type="password"
-                        placeholder="At least 8 characters"
-                        minlength="8"
-                        autocomplete="new-password"
-                        required>
-
-                    <button type="submit" class="primary-btn">
-                        Create account
-                    </button>
-
-                </form>
-
-                <p class="switch-text">
-                    Already have an account?
-                    <button type="button" id="show-login" class="text-btn">
-                        Log in
-                    </button>
-                </p>
-
-            </div>
-
-            <div id="login-view" hidden>
-
-                <h2>Welcome back</h2>
-                <p class="muted">Log in to your campus community.</p>
-
-                <form id="login-form">
-
-                    <label for="login-email">Email address</label>
-                    <input id="login-email"
-                        type="email"
-                        placeholder="Your email"
-                        autocomplete="email"
-                        required>
-
-                    <label for="login-password">Password</label>
-                    <input id="login-password"
-                        type="password"
-                        placeholder="Your password"
-                        autocomplete="current-password"
-                        required>
-
-                    <button type="submit" class="primary-btn">
-                        Log in
-                    </button>
-
-                </form>
-
-                <p class="switch-text">
-                    New to CampusConnect?
-                    <button type="button" id="show-signup" class="text-btn">
-                        Create account
-                    </button>
-                </p>
-
-            </div>
-
-        </div>
-    </section>
-
-    <!-- AUTHENTICATED DASHBOARD -->
-
-    <section id="dashboard" hidden>
-
-        <div class="dashboard-heading">
+        <div class="sidebar-profile">
+            <div class="avatar avatar-purple">CC</div>
             <div>
-                <span class="eyebrow">YOUR CAMPUS COMMUNITY</span>
-                <h1>Welcome, <span id="student-name">Student</span>!</h1>
-                <p class="muted">Your journey to meaningful connections starts here.</p>
+                <h4>Welcome to CampusConnect</h4>
+                <p>Student Community</p>
+            </div>
+        </div>
+
+        <nav class="navigation">
+
+            <p class="nav-heading">MENU</p>
+
+            <a href="#" class="nav-link active" data-page="home">
+                <i data-lucide="house"></i>
+                <span>Home Feed</span>
+            </a>
+
+            <a href="#" class="nav-link" data-page="discover">
+                <i data-lucide="compass"></i>
+                <span>Discover</span>
+            </a>
+
+            <a href="#" class="nav-link" data-page="messages">
+                <i data-lucide="message-circle"></i>
+                <span>Messages</span>
+                <span class="nav-badge">3</span>
+            </a>
+
+            <a href="#" class="nav-link" data-page="groups">
+                <i data-lucide="users"></i>
+                <span>Study Groups</span>
+            </a>
+
+            <a href="#" class="nav-link" data-page="events">
+                <i data-lucide="calendar-days"></i>
+                <span>Events</span>
+            </a>
+
+            <a href="#" class="nav-link" data-page="notifications">
+                <i data-lucide="bell"></i>
+                <span>Notifications</span>
+                <span class="notification-dot"></span>
+            </a>
+
+            <p class="nav-heading nav-heading-spaced">PERSONAL</p>
+
+            <a href="#" class="nav-link" data-page="profile">
+                <i data-lucide="user-round"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a href="#" class="nav-link" data-page="settings">
+                <i data-lucide="settings"></i>
+                <span>Settings</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <div class="upgrade-card">
+                <i data-lucide="graduation-cap"></i>
+                <h4>Your campus, your community.</h4>
+                <p>Meet people. Share ideas. Grow together.</p>
+            </div>
+            <p class="copyright">© 2026 CampusConnect</p>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <div class="mobile-brand">
+                <div class="brand-icon">
+                    <i data-lucide="graduation-cap"></i>
+                </div>
+                <strong>CampusConnect</strong>
             </div>
 
-            <button id="logout-btn" class="secondary-btn">
-                Log out
+            <div class="search-box">
+                <i data-lucide="search"></i>
+                <input type="search" placeholder="Search students, posts, groups...">
+                <span>⌘ K</span>
+            </div>
+
+            <div class="topbar-actions">
+                <button class="icon-button" aria-label="Notifications" data-page="notifications">
+                    <i data-lucide="bell"></i>
+                </button>
+
+                <button class="icon-button" aria-label="Messages" data-page="messages">
+                    <i data-lucide="mail"></i>
+                </button>
+
+                <div class="avatar avatar-purple">CC</div>
+            </div>
+
+        </header>
+
+
+        <!-- PAGE CONTENT -->
+        <div class="content-wrapper">
+
+            <!-- HOME FEED -->
+            <section class="page-section active" id="page-home">
+
+                <div class="welcome-section">
+                    <div>
+                        <p class="eyebrow">YOUR CAMPUS COMMUNITY</p>
+                        <h1>Discover what's happening.</h1>
+                        <p>Connect with students, share ideas and stay updated.</p>
+                    </div>
+
+                    <button class="primary-button" id="createPostBtn">
+                        <i data-lucide="plus"></i>
+                        Create Post
+                    </button>
+                </div>
+
+
+                <!-- STORIES -->
+                <div class="stories-section">
+
+                    <div class="section-header">
+                        <h3>Campus Moments</h3>
+                        <span>See what's happening</span>
+                    </div>
+
+                    <div class="stories-list">
+
+                        <div class="story-item">
+                            <div class="story-ring add-story">
+                                <i data-lucide="plus"></i>
+                            </div>
+                            <span>Your Story</span>
+                        </div>
+
+                        <div class="story-item">
+                            <div class="story-ring">
+                                <div class="story-avatar story-one">AM</div>
+                            </div>
+                            <span>Abena</span>
+                        </div>
+
+                        <div class="story-item">
+                            <div class="story-ring">
+                                <div class="story-avatar story-two">JK</div>
+                            </div>
+                            <span>Joseph</span>
+                        </div>
+
+                        <div class="story-item">
+                            <div class="story-ring">
+                                <div class="story-avatar story-three">SK</div>
+                            </div>
+                            <span>Sarah</span>
+                        </div>
+
+                        <div class="story-item">
+                            <div class="story-ring">
+                                <div class="story-avatar story-four">DM</div>
+                            </div>
+                            <span>Daniel</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CREATE POST -->
+                <div class="create-post-card">
+
+                    <div class="post-input-row">
+                        <div class="avatar avatar-purple">CC</div>
+                        <button class="fake-input" id="openPostComposer">
+                            What's happening on campus?
+                        </button>
+                    </div>
+
+                    <div class="post-actions">
+
+                        <button id="photoPostBtn">
+                            <i data-lucide="image"></i>
+                            Photo
+                        </button>
+
+                        <button id="discussionPostBtn">
+                            <i data-lucide="message-square"></i>
+                            Discussion
+                        </button>
+
+                        <button id="studyPostBtn">
+                            <i data-lucide="book-open"></i>
+                            Study Update
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FEED FILTER -->
+                <div class="feed-filter">
+                    <h3>Campus Feed</h3>
+
+                    <select id="feedFilter">
+                        <option value="all">For You</option>
+                        <option value="academic">Academic</option>
+                        <option value="social">Social</option>
+                        <option value="technology">Technology</option>
+                    </select>
+                </div>
+
+
+                <!-- POSTS -->
+                <div class="posts-container" id="postsContainer">
+
+                    <article class="post-card" data-category="academic">
+
+                        <div class="post-header">
+                            <div class="avatar avatar-orange">AM</div>
+
+                            <div class="post-author">
+                                <h4>Abena Mensah <span class="verified">✓</span></h4>
+                                <p>Computer Science · UCC · 12 min ago</p>
+                            </div>
+
+                            <button class="more-button" aria-label="Post options">
+                                <i data-lucide="more-horizontal"></i>
+                            </button>
+                        </div>
+
+                        <div class="post-body">
+                            <p>
+                                Hello CampusConnect! 👋
+
+                                Anyone studying Python programming?
+                                I am looking for people interested in creating
+                                a study group so we can practice together.
+                            </p>
+
+                            <div class="post-tags">
+                                #Python #ComputerScience #StudyTogether
+                            </div>
+                        </div>
+
+                        <div class="post-footer">
+                            <button class="like-button">
+                                <i data-lucide="heart"></i>
+                                <span>24</span>
+                            </button>
+
+                            <button class="comment-button">
+                                <i data-lucide="message-circle"></i>
+                                <span>8 Comments</span>
+                            </button>
+
+                            <button>
+                                <i data-lucide="repeat-2"></i>
+                                <span>Share</span>
+                            </button>
+
+                            <button class="save-button">
+                                <i data-lucide="bookmark"></i>
+                            </button>
+                        </div>
+
+                    </article>
+
+
+                    <article class="post-card" data-category="technology">
+
+                        <div class="post-header">
+                            <div class="avatar avatar-blue">JK</div>
+
+                            <div class="post-author">
+                                <h4>Joseph Kofi</h4>
+                                <p>Information Technology · UCC · 35 min ago</p>
+                            </div>
+
+                            <button class="more-button">
+                                <i data-lucide="more-horizontal"></i>
+                            </button>
+                        </div>
+
+                        <div class="post-body">
+                            <p>
+                                What technology are you currently learning?
+
+                                I have started exploring Artificial Intelligence
+                                and Machine Learning. The future is exciting! 🚀
+                            </p>
+
+                            <div class="post-tags">
+                                #AI #MachineLearning #Technology
+                            </div>
+                        </div>
+
+                        <div class="post-footer">
+                            <button class="like-button">
+                                <i data-lucide="heart"></i>
+                                <span>46</span>
+                            </button>
+
+                            <button class="comment-button">
+                                <i data-lucide="message-circle"></i>
+                                <span>12 Comments</span>
+                            </button>
+
+                            <button>
+                                <i data-lucide="repeat-2"></i>
+                                <span>Share</span>
+                            </button>
+
+                            <button class="save-button">
+                                <i data-lucide="bookmark"></i>
+                            </button>
+                        </div>
+
+                    </article>
+
+                </div>
+
+            </section>
+
+
+            <!-- DISCOVER -->
+            <section class="page-section" id="page-discover">
+                <div class="page-heading">
+                    <p class="eyebrow">EXPLORE YOUR COMMUNITY</p>
+                    <h1>Discover Students</h1>
+                    <p>Find people who share your interests.</p>
+                </div>
+
+                <div class="search-box discover-search">
+                    <i data-lucide="search"></i>
+                    <input type="search" placeholder="Search students or programmes...">
+                </div>
+
+                <div class="filter-chips">
+                    <button class="active">All Students</button>
+                    <button>Computer Science</button>
+                    <button>Engineering</button>
+                    <button>Business</button>
+                </div>
+
+                <div class="empty-state">
+                    <i data-lucide="users"></i>
+                    <h3>Meet your campus community</h3>
+                    <p>Student discovery will be connected to real student profiles in the next development phase.</p>
+                </div>
+            </section>
+
+
+            <!-- MESSAGES -->
+            <section class="page-section" id="page-messages">
+                <div class="page-heading">
+                    <p class="eyebrow">STAY CONNECTED</p>
+                    <h1>Messages</h1>
+                    <p>Have private conversations with other students.</p>
+                </div>
+
+                <div class="empty-state">
+                    <i data-lucide="message-circle"></i>
+                    <h3>Your conversations start here</h3>
+                    <p>Private messaging and real-time chat will be connected to Supabase.</p>
+                </div>
+            </section>
+
+
+            <!-- STUDY GROUPS -->
+            <section class="page-section" id="page-groups">
+                <div class="page-heading">
+                    <p class="eyebrow">LEARN TOGETHER</p>
+                    <h1>Study Groups</h1>
+                    <p>Find your people. Share knowledge. Achieve more.</p>
+                </div>
+
+                <button class="primary-button">
+                    <i data-lucide="plus"></i>
+                    Create Study Group
+                </button>
+
+                <div class="empty-state">
+                    <i data-lucide="book-open"></i>
+                    <h3>Build your learning community</h3>
+                    <p>Create or join groups for courses, programming, projects and exam preparation.</p>
+                </div>
+            </section>
+
+
+            <!-- EVENTS -->
+            <section class="page-section" id="page-events">
+                <div class="page-heading">
+                    <p class="eyebrow">CAMPUS LIFE</p>
+                    <h1>Campus Events</h1>
+                    <p>Discover activities and opportunities around you.</p>
+                </div>
+
+                <div class="empty-state">
+                    <i data-lucide="calendar-days"></i>
+                    <h3>Never miss a campus event</h3>
+                    <p>Seminars, workshops, meetups and student activities.</p>
+                </div>
+            </section>
+
+
+            <!-- NOTIFICATIONS -->
+            <section class="page-section" id="page-notifications">
+                <div class="page-heading">
+                    <p class="eyebrow">STAY UPDATED</p>
+                    <h1>Notifications</h1>
+                    <p>Your activity and updates will appear here.</p>
+                </div>
+
+                <div class="empty-state">
+                    <i data-lucide="bell"></i>
+                    <h3>You're all caught up</h3>
+                    <p>Likes, comments, messages and group invitations will appear here.</p>
+                </div>
+            </section>
+
+
+            <!-- PROFILE -->
+            <section class="page-section" id="page-profile">
+                <div class="page-heading">
+                    <p class="eyebrow">YOUR IDENTITY</p>
+                    <h1>My Profile</h1>
+                </div>
+
+                <div class="empty-state">
+                    <i data-lucide="user-round"></i>
+                    <h3>Your student profile</h3>
+                    <p>Profile photos, biography, university, interests and posts will be available here.</p>
+                </div>
+            </section>
+
+
+            <!-- SETTINGS -->
+            <section class="page-section" id="page-settings">
+                <div class="page-heading">
+                    <p class="eyebrow">PREFERENCES</p>
+                    <h1>Settings</h1>
+                    <p>Manage your account and privacy.</p>
+                </div>
+
+                <div class="empty-state">
+                    <i data-lucide="settings"></i>
+                    <h3>Account settings</h3>
+                    <p>Privacy, security, notifications and account preferences.</p>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<!-- MOBILE BOTTOM NAVIGATION -->
+<nav class="mobile-bottom-nav">
+
+    <button class="active" data-page="home">
+        <i data-lucide="house"></i>
+        <span>Home</span>
+    </button>
+
+    <button data-page="discover">
+        <i data-lucide="compass"></i>
+        <span>Discover</span>
+    </button>
+
+    <button data-page="groups">
+        <i data-lucide="users"></i>
+        <span>Groups</span>
+    </button>
+
+    <button data-page="messages">
+        <i data-lucide="message-circle"></i>
+        <span>Messages</span>
+    </button>
+
+    <button data-page="profile">
+        <i data-lucide="user-round"></i>
+        <span>Profile</span>
+    </button>
+
+</nav>
+
+
+<!-- CREATE POST MODAL -->
+<div class="modal-overlay" id="postModal">
+
+    <div class="modal">
+
+        <div class="modal-header">
+            <h3>Create a post</h3>
+            <button id="closePostModal" aria-label="Close">
+                <i data-lucide="x"></i>
             </button>
         </div>
 
-        <div class="dashboard-grid">
-
-            <section class="dashboard-card profile-card">
-
-                <div class="avatar" id="student-avatar">S</div>
-
-                <h2 id="profile-name">Student</h2>
-
-                <p id="profile-programme" class="muted"></p>
-                <p id="profile-university" class="muted"></p>
-                <p id="profile-level" class="muted"></p>
-
-                <div class="privacy-option">
-                    <label for="discoverable-toggle">
-                        Allow other students to discover my profile
-                    </label>
-                    <input type="checkbox"
-                        id="discoverable-toggle"
-                        checked>
-                </div>
-
-                <button id="save-profile-btn" class="secondary-btn">
-                    Save profile settings
-                </button>
-
-            </section>
-
-            <section class="dashboard-card interests-card">
-
-                <div class="section-heading">
-                    <div>
-                        <span class="eyebrow">PERSONALIZE YOUR EXPERIENCE</span>
-                        <h2>Your interests</h2>
-                        <p class="muted">
-                            Select up to 10 interests to improve
-                            your future friend recommendations.
-                        </p>
-                    </div>
-                </div>
-
-                <div id="interest-options" class="interest-options">
-                    Loading interests...
-                </div>
-
-                <p class="muted small-text">
-                    You can change your interests later.
-                </p>
-
-                <button id="save-interests-btn" class="primary-btn">
-                    Save my interests
-                </button>
-
-            </section>
-
+        <div class="modal-body">
+            <textarea id="postContent" placeholder="Share something with your campus community..."></textarea>
         </div>
 
-        <div class="coming-soon">
-            <h2>Your next connection is waiting.</h2>
-            <p>
-                Student discovery, friend matching,
-                messaging and communities are coming next.
-            </p>
+        <div class="modal-footer">
+            <span>Share your thoughts with students.</span>
+            <button class="primary-button" id="publishPost">
+                Publish Post
+            </button>
         </div>
 
-    </section>
+    </div>
 
-    <div id="global-status" class="status" role="status" aria-live="polite"></div>
+</div>
 
-</main>
 
-<footer>
-    <p>CampusConnect © 2026. Connecting students, building communities.</p>
-</footer>
+<script src="app.js"></script>
 
 </body>
-  </html>
-                                                     
+</html>
