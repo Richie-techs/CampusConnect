@@ -23,6 +23,440 @@
 
 <body>
 
+<!-- CAMPUSCONNECT AUTHENTICATION -->
+<style>
+[hidden] {
+    display: none !important;
+}
+
+#auth-panel {
+    min-height: 100vh;
+    padding: 30px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at top left, #eee9ff, transparent 45%),
+        linear-gradient(135deg, #f8f7ff, #ffffff);
+    font-family: Inter, sans-serif;
+}
+
+#auth-panel .auth-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 36px;
+    background: white;
+    border: 1px solid #eceaf5;
+    border-radius: 22px;
+    box-shadow: 0 15px 55px rgba(40, 30, 90, .09);
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-logo .auth-icon {
+    width: 58px;
+    height: 58px;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 13px;
+    border-radius: 17px;
+    color: white;
+    background: #7357F6;
+    font-size: 27px;
+}
+
+.auth-logo h1 {
+    font-size: 25px;
+    color: #202033;
+    font-weight: 800;
+}
+
+.auth-logo h1 span {
+    color: #7357F6;
+}
+
+.auth-logo p {
+    color: #88889a;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.auth-card h2 {
+    font-size: 21px;
+    margin-bottom: 7px;
+    color: #202033;
+}
+
+.auth-description {
+    color: #88889a;
+    font-size: 13px;
+    margin-bottom: 23px;
+    line-height: 1.6;
+}
+
+.auth-field {
+    margin-bottom: 15px;
+}
+
+.auth-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 7px;
+    color: #424255;
+}
+
+.auth-field input,
+.auth-field select {
+    width: 100%;
+    height: 46px;
+    padding: 0 13px;
+    border: 1px solid #e5e3ee;
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+    color: #202033;
+    font-size: 13px;
+}
+
+.auth-field input:focus,
+.auth-field select:focus {
+    border-color: #7357F6;
+    box-shadow: 0 0 0 3px rgba(115, 87, 246, .1);
+}
+
+.auth-submit {
+    width: 100%;
+    min-height: 47px;
+    margin-top: 7px;
+    border-radius: 10px;
+    color: white;
+    background: #7357F6;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.auth-submit:hover {
+    background: #6044e8;
+}
+
+.auth-submit:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.auth-switch {
+    text-align: center;
+    color: #777789;
+    font-size: 12px;
+    margin-top: 21px;
+}
+
+.auth-switch button,
+.auth-link {
+    color: #7357F6;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.auth-link {
+    display: block;
+    margin: 12px 0;
+    font-size: 12px;
+    text-align: right;
+}
+
+.auth-password-row {
+    display: flex;
+    gap: 7px;
+}
+
+.auth-password-row input {
+    flex: 1;
+    min-width: 0;
+}
+
+.auth-password-row button {
+    padding: 0 12px;
+    border: 1px solid #e5e3ee;
+    border-radius: 9px;
+    color: #7357F6;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.status-message {
+    padding: 12px;
+    margin-bottom: 18px;
+    border-radius: 9px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.status-message.error {
+    color: #a52242;
+    background: #fff0f3;
+}
+
+.status-message.success {
+    color: #167548;
+    background: #eafaf2;
+}
+
+.status-message.info {
+    color: #5541a5;
+    background: #f1efff;
+}
+
+.auth-footer {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 11px;
+    color: #aaa;
+}
+
+@media(max-width: 480px) {
+    #auth-panel .auth-card {
+        padding: 25px 19px;
+    }
+}
+</style>
+
+<div id="auth-panel" hidden>
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <div class="auth-icon">🎓</div>
+            <h1>Campus<span>Connect</span></h1>
+            <p>Connect. Learn. Belong.</p>
+        </div>
+
+        <div id="global-status"
+             class="status-message"
+             role="status"
+             aria-live="polite"
+             hidden>
+        </div>
+
+        <!-- LOGIN -->
+        <section id="login-view">
+            <h2>Welcome back 👋</h2>
+            <p class="auth-description">
+                Log in to connect with your campus community.
+            </p>
+
+            <form id="login-form">
+
+                <div class="auth-field">
+                    <label for="login-email">Email address</label>
+                    <input
+                        type="email"
+                        id="login-email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="login-password">Password</label>
+                    <div class="auth-password-row">
+                        <input
+                            type="password"
+                            id="login-password"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required>
+                        <button type="button"
+                                data-toggle-password="login-password">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button"
+                        class="auth-link"
+                        id="forgot-password">
+                    Forgot password?
+                </button>
+
+                <button type="submit" class="auth-submit">
+                    Login
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                Don't have an account?
+                <button type="button" id="show-signup">
+                    Create account
+                </button>
+            </p>
+        </section>
+
+        <!-- SIGNUP -->
+        <section id="signup-view" hidden>
+            <h2>Join CampusConnect 🚀</h2>
+            <p class="auth-description">
+                Create your student account and meet your campus community.
+            </p>
+
+            <form id="signup-form">
+
+                <div class="auth-field">
+                    <label for="signup-name">Full name</label>
+                    <input
+                        type="text"
+                        id="signup-name"
+                        placeholder="Your full name"
+                        autocomplete="name"
+                        required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="signup-email">Email address</label>
+                    <input
+                        type="email"
+                        id="signup-email"
+                        placeholder="you@example.com"
+                        autocomplete="email"
+                        required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="signup-university">University</label>
+                    <select id="signup-university" required>
+                        <option value="">Select your university</option>
+                        <option value="University of Cape Coast">University of Cape Coast</option>
+                        <option value="University of Ghana">University of Ghana</option>
+                        <option value="KNUST">KNUST</option>
+                        <option value="University of Education, Winneba">University of Education, Winneba</option>
+                        <option value="University of Professional Studies, Accra">UPSA</option>
+                        <option value="University for Development Studies">UDS</option>
+                        <option value="University of Mines and Technology">UMaT</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="auth-field">
+                    <label for="signup-programme">Programme of study</label>
+                    <input
+                        type="text"
+                        id="signup-programme"
+                        placeholder="e.g. Computer Science"
+                        required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="signup-level">Study level</label>
+                    <select id="signup-level" required>
+                        <option value="">Select your level</option>
+                        <option value="Level 100">Level 100</option>
+                        <option value="Level 200">Level 200</option>
+                        <option value="Level 300">Level 300</option>
+                        <option value="Level 400">Level 400</option>
+                        <option value="Postgraduate">Postgraduate</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="auth-field">
+                    <label for="signup-password">Password</label>
+                    <div class="auth-password-row">
+                        <input
+                            type="password"
+                            id="signup-password"
+                            placeholder="At least 8 characters"
+                            minlength="8"
+                            autocomplete="new-password"
+                            required>
+                        <button type="button"
+                                data-toggle-password="signup-password">
+                            Show
+                        </button>
+                    </div>
+                </div>
+
+                <div class="auth-field">
+                    <label for="signup-confirm-password">
+                        Confirm password
+                    </label>
+                    <input
+                        type="password"
+                        id="signup-confirm-password"
+                        placeholder="Enter password again"
+                        minlength="8"
+                        autocomplete="new-password"
+                        required>
+                </div>
+
+                <button type="submit" class="auth-submit">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                Already have an account?
+                <button type="button" id="show-login">
+                    Login
+                </button>
+            </p>
+        </section>
+
+        <!-- PASSWORD RESET -->
+        <section id="reset-view" hidden>
+            <h2>Reset your password</h2>
+            <p class="auth-description">
+                Enter a new password for your account.
+            </p>
+
+            <form id="update-password-form">
+                <div class="auth-field">
+                    <label for="new-password">New password</label>
+                    <input
+                        type="password"
+                        id="new-password"
+                        minlength="8"
+                        placeholder="At least 8 characters"
+                        required>
+                </div>
+
+                <div class="auth-field">
+                    <label for="confirm-new-password">
+                        Confirm new password
+                    </label>
+                    <input
+                        type="password"
+                        id="confirm-new-password"
+                        minlength="8"
+                        placeholder="Repeat new password"
+                        required>
+                </div>
+
+                <button type="submit" class="auth-submit">
+                    Update Password
+                </button>
+            </form>
+
+            <p class="auth-switch">
+                <button type="button" id="show-login">
+                    Back to login
+                </button>
+            </p>
+        </section>
+
+        <div class="auth-footer">
+            © 2026 CampusConnect. Built for students.
+        </div>
+
+    </div>
+</div>
+<!-- END AUTHENTICATION -->
+
+
 <div class="app-container">
 
     <!-- SIDEBAR -->
