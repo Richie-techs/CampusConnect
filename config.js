@@ -2,7 +2,7 @@
 "use strict";
 
 window.CAMPUSCONNECT_SUPABASE_URL =
-    "https://vaebulmgychqvogzqesi.supabase.co";
+    "https://xueyaxmangwujngtusrm.supabase.co/rest/v1/";
 
 window.CAMPUSCONNECT_SUPABASE_PUBLISHABLE_KEY =
-    "sb_publishable_U8ILGJoA9hWP8HZnQ8qF3g_3ecS_IeN";
+    "sb_publishable_VzrE73_adBuj5doGw4Mo1Q_XBARwWVI";
