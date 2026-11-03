@@ -64,8 +64,71 @@
     // destroying the original feed.
     // ==========================================
 
-    function loadInitialPosts() {
+    
+    // ==========================================
+    // LOAD POSTS FROM SUPABASE
+    // ==========================================
+
+    async function loadInitialPosts() {
         const container = $("postsContainer");
+        const db = window.CampusConnect?.db;
+
+        if (!container || !db) {
+            console.error("Supabase client or posts container missing.");
+            return;
+        }
+
+        try {
+            const { data, error } = await db
+                .from("posts")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            state.posts = (data || []).map(post => {
+                const isOwnPost =
+                    post.user_id === state.user?.id;
+
+                const date = post.created_at
+                    ? new Date(post.created_at)
+                    : null;
+
+                return {
+                    id: post.id,
+                    user_id: post.user_id,
+                    author: isOwnPost
+                        ? getUserName()
+                        : "Student",
+                    username: isOwnPost
+                        ? getUsername()
+                        : "student",
+                    details: date
+                        ? date.toLocaleString()
+                        : "Recently",
+                    time: date
+                        ? date.toLocaleString()
+                        : "Recently",
+                    content: post.content,
+                    category: post.category || "social",
+                    image_url: post.image_url,
+                    likes: 0,
+                    comments: 0,
+                    liked: false,
+                    isNew: false
+                };
+            });
+
+            renderPosts();
+
+            console.log("Supabase posts loaded:", state.posts.length);
+
+        } catch (error) {
+            console.error("Could not load posts:", error);
+            alert("Could not load posts: " + error.message);
+        }
+    }
+
 
         if (!container) {
             console.error("postsContainer was not found.");
