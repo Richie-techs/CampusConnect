@@ -406,7 +406,111 @@ document.addEventListener("keydown", function (event) {
 
   
     
-   
+    
+    // ==========================================
+    // PUBLISH POST TO SUPABASE
+    // ==========================================
+
+    async function createPost() {
+        const input = $("postContent");
+
+        if (!input) {
+            alert("Post editor not found.");
+            return;
+        }
+
+        const content = input.value.trim();
+
+        if (!content) {
+            alert("Please write something before publishing.");
+            input.focus();
+            return;
+        }
+
+        const db = window.CampusConnect?.db;
+        const user = window.CampusConnect?.getCurrentUser?.();
+
+        if (!db || !user?.id) {
+            alert("Please log in before publishing.");
+            return;
+        }
+
+        const button = $("publishPost");
+
+        if (button) {
+            button.disabled = true;
+            button.textContent = "Publishing...";
+        }
+
+        try {
+            const { data, error } = await db
+                .from("posts")
+                .insert({
+                    user_id: user.id,
+                    content: content,
+                    category: "social"
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            // Synchronize the logged-in user
+            updateUser(user);
+
+            const newPost = {
+                id: data.id,
+                author: getUserName(),
+                username: getUsername(),
+                details: "Just now",
+                time: "Just now",
+                content: data.content,
+                category: data.category || "social",
+                image_url: data.image_url,
+                likes: 0,
+                comments: 0,
+                liked: false,
+                isNew: true
+            };
+
+            state.posts.unshift(newPost);
+
+            input.value = "";
+            state.filter = "all";
+            state.search = "";
+
+            if ($("feedFilter")) {
+                $("feedFilter").value = "all";
+            }
+
+            if ($("searchInput")) {
+                $("searchInput").value = "";
+            }
+
+            renderPosts();
+            closePostModal();
+            navigate("home");
+
+            alert("Your post has been published!");
+
+        } catch (error) {
+            console.error("Publishing error:", error);
+            alert("Could not publish post: " + error.message);
+
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = "Publish";
+            }
+        }
+    }
+
+    // Publish button event
+    $("publishPost")?.addEventListener("click", event => {
+        event.preventDefault();
+        createPost();
+    });
+
     // ==========================================
     // INITIALIZE
     // ==========================================
