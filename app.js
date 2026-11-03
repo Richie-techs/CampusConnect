@@ -1,4 +1,5 @@
 
+
 (() => {
     "use strict";
 
@@ -669,3 +670,359 @@
 
             // Share
             const shareButton = document.createElement("button");
+            shareButton.type = "button";
+
+            const shareIcon = document.createElement("i");
+            shareIcon.setAttribute("data-lucide", "repeat-2");
+
+            const shareText = document.createElement("span");
+            shareText.textContent = "Share";
+
+            shareButton.append(shareIcon, shareText);
+
+            shareButton.addEventListener("click", async () => {
+                const shareTextContent =
+                    `${post.content}\n\nCampusConnect`;
+
+                try {
+                    await navigator.clipboard.writeText(
+                        shareTextContent
+                    );
+                    alert("Post copied!");
+                } catch {
+                    alert(post.content);
+                }
+            });
+
+            footer.append(
+                likeButton,
+                commentButton,
+                shareButton
+            );
+
+            const commentsSection =
+                createCommentsSection(post);
+
+            article.append(
+                header,
+                body,
+                footer,
+                commentsSection
+            );
+
+            container.appendChild(article);
+        });
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }
+
+    // ==========================================
+    // REALTIME SUBSCRIPTIONS
+    // ==========================================
+
+    function removeRealtimeSubscriptions() {
+        const db = getDB();
+
+        if (!db) return;
+
+        if (state.likesChannel) {
+            db.removeChannel(state.likesChannel);
+            state.likesChannel = null;
+        }
+
+        if (state.commentsChannel) {
+            db.removeChannel(state.commentsChannel);
+            state.commentsChannel = null;
+        }
+    }
+
+    function subscribeToRealtime() {
+        const db = getDB();
+
+        if (!db || !state.user) return;
+
+        removeRealtimeSubscriptions();
+
+        state.likesChannel = db
+            .channel("campusconnect-post-likes")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "post_likes"
+                },
+                async () => {
+                    try {
+                        await loadInteractions();
+                        renderPosts();
+                    } catch (error) {
+                        console.error("Realtime likes error:", error);
+                    }
+                }
+            )
+            .subscribe();
+
+        state.commentsChannel = db
+            .channel("campusconnect-post-comments")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "comments"
+                },
+                async () => {
+                    try {
+                        await loadInteractions();
+                        renderPosts();
+                    } catch (error) {
+                        console.error("Realtime comments error:", error);
+                    }
+                }
+            )
+            .subscribe();
+    }
+
+    // ==========================================
+    // NAVIGATION
+    // ==========================================
+
+    function navigate(page) {
+        if (!page) return;
+
+        document.querySelectorAll(".page-section").forEach(section => {
+            const sectionPage =
+                section.dataset.page ||
+                section.id.replace("page-", "");
+
+            section.classList.toggle(
+                "active",
+                sectionPage === page
+            );
+        });
+
+        document.querySelectorAll("[data-page], [data-nav]").forEach(item => {
+            const destination =
+                item.dataset.page || item.dataset.nav;
+
+            item.classList.toggle("active", destination === page);
+        });
+
+        const title = $("pageTitle");
+
+        if (title) {
+            title.textContent =
+                page.charAt(0).toUpperCase() + page.slice(1);
+        }
+
+        closePostModal();
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    document.addEventListener("click", event => {
+        const target = event.target;
+
+        if (!(target instanceof Element)) return;
+
+        const nav = target.closest("[data-page], [data-nav]");
+
+        if (!nav || nav.id === "logout-button") return;
+
+        const page = nav.dataset.page || nav.dataset.nav;
+
+        if (page) {
+            event.preventDefault();
+            navigate(page);
+        }
+    });
+
+    // ==========================================
+    // SEARCH AND FILTER
+    // ==========================================
+
+    $("feedFilter")?.addEventListener("change", event => {
+        state.filter = event.target.value;
+        renderPosts();
+    });
+
+    $("searchInput")?.addEventListener("input", event => {
+        state.search = event.target.value.toLowerCase().trim();
+        renderPosts();
+    });
+
+    // ==========================================
+    // POST COMPOSER
+    // ==========================================
+
+    const modal = $("postModal");
+
+    function openPostModal() {
+        if (!modal) {
+            console.error("Post modal #postModal was not found.");
+            return;
+        }
+
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
+
+        const input = $("postContent");
+
+        if (input) {
+            setTimeout(() => input.focus(), 100);
+        }
+    }
+
+    function closePostModal() {
+        if (!modal) return;
+
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+    }
+
+    document.addEventListener("click", event => {
+        const target = event.target;
+
+        if (!(target instanceof Element)) return;
+
+        const openButton = target.closest(
+            "#createPostBtn, #openPostComposer, #openPostModal, #discussionPostBtn, #studyPostBtn, #photoPostBtn"
+        );
+
+        if (openButton) {
+            event.preventDefault();
+            openPostModal();
+            return;
+        }
+
+        const closeButton = target.closest(
+            "#closePostModal, #closePostComposer"
+        );
+
+        if (closeButton) {
+            event.preventDefault();
+            closePostModal();
+            return;
+        }
+
+        if (target === modal) {
+            closePostModal();
+        }
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closePostModal();
+        }
+    });
+
+    // ==========================================
+    // PUBLISH POST
+    // ==========================================
+
+    async function createPost() {
+        const input = $("postContent");
+
+        if (!input) {
+            alert("Post editor not found.");
+            return;
+        }
+
+        const content = input.value.trim();
+
+        if (!content) {
+            alert("Please write something before publishing.");
+            input.focus();
+            return;
+        }
+
+        const db = getDB();
+
+        const user =
+            window.CampusConnect?.getCurrentUser?.() ||
+            state.user;
+
+        if (!db || !user?.id) {
+            alert("Please log in before publishing.");
+            return;
+        }
+
+        const button = $("publishPost");
+
+        if (button) {
+            button.disabled = true;
+            button.textContent = "Publishing...";
+        }
+
+        try {
+            const { data, error } = await db
+                .from("posts")
+                .insert({
+                    user_id: user.id,
+                    content,
+                    category: "social"
+                })
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            input.value = "";
+
+            state.filter = "all";
+            state.search = "";
+
+            if ($("feedFilter")) {
+                $("feedFilter").value = "all";
+            }
+
+            if ($("searchInput")) {
+                $("searchInput").value = "";
+            }
+
+            await loadInitialPosts();
+
+            closePostModal();
+            navigate("home");
+
+            alert("Your post has been published!");
+
+        } catch (error) {
+            console.error("Publishing error:", error);
+            alert("Could not publish post: " + error.message);
+
+        } finally {
+            if (button) {
+                button.disabled = false;
+                button.textContent = "Publish";
+            }
+        }
+    }
+
+    $("publishPost")?.addEventListener("click", event => {
+        event.preventDefault();
+        createPost();
+    });
+
+    // ==========================================
+    // INITIALIZE
+    // ==========================================
+
+    const existingUser =
+        window.CampusConnect?.getCurrentUser?.();
+
+    if (existingUser) {
+        updateUser(existingUser);
+    } else {
+        renderPosts();
+    }
+
+    console.log("CampusConnect application engine ready.");
+
+})();
