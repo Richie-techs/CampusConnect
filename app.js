@@ -1126,6 +1126,24 @@ async function loadMyProfile() {
     if (!state.user || !db()) return;
 
     const userId = state.user.id;
+console.log("Profile loading started:", userId);
+
+[
+    "profile-full-name",
+    "profile-username",
+    "profile-bio",
+    "profile-university",
+    "profile-department",
+    "profile-level",
+    "profile-avatar",
+    "profile-cover-image",
+    "profile-post-count",
+    "profile-followers-count",
+    "profile-following-count",
+    "profile-posts-container"
+].forEach(id => {
+    console.log(id, $(id) ? "FOUND" : "MISSING");
+});
 
     try {
         const [profileResult, postsResult, followersResult, followingResult] =
