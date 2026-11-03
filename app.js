@@ -50,7 +50,12 @@
             el.textContent = avatar;
         });
 
-        renderPosts();
+        if (state.user) {
+    loadInitialPosts();
+} else {
+    state.posts = [];
+    renderPosts();
+}
     }
 
     // Authentication system can call this after login.
