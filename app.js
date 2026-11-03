@@ -476,11 +476,13 @@
     // ==========================================
 
      
-        async function createComment(post, input, button) {
+       
+       async function createComment(post, input, button) {
+
     const content = input.value.trim();
 
-    if (!state.user || !db()) {
-        notify("Please log in to comment.");
+    if (!state.user) {
+        alert("Please log in before commenting.");
         return;
     }
 
@@ -495,31 +497,51 @@
     button.textContent = "Sending...";
 
     try {
-        const { data, error } = await db()
+        console.log("Submitting comment:", {
+            post_id: post.id,
+            user_id: state.user.id,
+            content: content
+        });
+
+        const { error } = await db()
             .from("comments")
             .insert({
                 post_id: post.id,
                 user_id: state.user.id,
                 content: content
-            })
-            .select()
-            .single();
+            });
 
-        if (error) throw error;
+        if (error) {
+            console.error("Supabase insert error:", error);
+            throw error;
+        }
+
+        console.log("Comment successfully saved.");
+
+        input.value = "";
 
         state.openComments.add(post.id);
 
-        await loadInteractions();
-
-        renderPosts();
+        try {
+            await loadInteractions();
+            renderPosts();
+        } catch (refreshError) {
+            console.error("Comment refresh error:", refreshError);
+            alert("Comment was saved, but the feed could not refresh. Reload the page.");
+        }
 
     } catch (error) {
-        console.error("CampusConnect comment error:", error);
 
-        alert("Could not submit comment: " + error.message);
+        console.error("Comment submission failed:", error);
 
-        button.disabled = false;
-        button.textContent = "Comment";
+        alert("Comment failed: " + error.message);
+
+    } finally {
+
+        if (button.isConnected) {
+            button.disabled = false;
+            button.textContent = "Comment";
+        }
     }
 }
     // ==========================================
