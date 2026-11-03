@@ -1057,11 +1057,23 @@
             <label>Study Level</label>
             <input type="text" id="editLevel">
 
-            <label>Profile Picture</label>
-            <input type="file" id="editAvatar" accept="image/*">
+            <div class="profile-upload-field">
+    <label for="editAvatar">Profile Picture</label>
+    <input
+        type="file"
+        id="editAvatar"
+        accept="image/png,image/jpeg,image/webp"
+    >
+</div>
 
-            <label>Cover Photo</label>
-            <input type="file" id="editCover" accept="image/*">
+<div class="profile-upload-field">
+    <label for="editCover">Cover Photo</label>
+    <input
+        type="file"
+        id="editCover"
+        accept="image/png,image/jpeg,image/webp"
+    >
+</div>
 
             <button type="submit" id="saveProfileButton">
                 Save Changes
