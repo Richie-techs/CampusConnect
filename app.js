@@ -475,59 +475,53 @@
     // CREATE COMMENTS
     // ==========================================
 
-    async function createComment(post, input, button) {
+     
+        async function createComment(post, input, button) {
+    const content = input.value.trim();
 
-        const content = input.value.trim();
-
-        if (!state.user || !db()) {
-            notify("Please log in to comment.");
-            return;
-        }
-
-        if (!content) {
-            input.focus();
-            return;
-        }
-
-        button.disabled = true;
-        button.textContent = "Sending...";
-
-        try {
-
-            const { error } = await db()
-                .from("comments")
-                .insert({
-                    post_id: post.id,
-                    user_id: state.user.id,
-                    content: content
-                });
-
-            if (error) throw error;
-
-            state.openComments.add(post.id);
-
-            await loadInteractions();
-
-            renderPosts();
-
-        } catch (error) {
-
-            console.error(
-                "CampusConnect comment error:",
-                error
-            );
-
-            alert(
-                "Could not submit comment: " + error.message
-            );
-
-        } finally {
-
-            button.disabled = false;
-            button.textContent = "Comment";
-        }
+    if (!state.user || !db()) {
+        notify("Please log in to comment.");
+        return;
     }
 
+    if (!content) {
+        input.focus();
+        return;
+    }
+
+    if (button.disabled) return;
+
+    button.disabled = true;
+    button.textContent = "Sending...";
+
+    try {
+        const { data, error } = await db()
+            .from("comments")
+            .insert({
+                post_id: post.id,
+                user_id: state.user.id,
+                content: content
+            })
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        state.openComments.add(post.id);
+
+        await loadInteractions();
+
+        renderPosts();
+
+    } catch (error) {
+        console.error("CampusConnect comment error:", error);
+
+        alert("Could not submit comment: " + error.message);
+
+        button.disabled = false;
+        button.textContent = "Comment";
+    }
+}
     // ==========================================
     // DELETE OWN COMMENTS
     // ==========================================
@@ -576,130 +570,100 @@
     // BUILD COMMENTS SECTION
     // ==========================================
 
-    function buildComments(post) {
+     
+       
+       function buildComments(post) {
+    const section = document.createElement("section");
+    section.className = "comments-section";
 
-        const section = document.createElement("section");
+    const heading = document.createElement("h4");
+    heading.textContent = "Comments";
 
-        section.className = "comments-section";
+    section.appendChild(heading);
 
-        const heading = document.createElement("h4");
+    const list = document.createElement("div");
+    list.className = "comments-list";
 
-        heading.textContent = "Comments";
+    if (!post.commentList.length) {
+        const empty = document.createElement("p");
+        empty.className = "no-comments";
+        empty.textContent = "No comments yet. Start the conversation!";
 
-        section.appendChild(heading);
+        list.appendChild(empty);
+    }
 
-        const list = document.createElement("div");
+    post.commentList.forEach(comment => {
+        const item = document.createElement("div");
+        item.className = "comment-item";
 
-        list.className = "comments-list";
+        const avatar = document.createElement("div");
+        avatar.className = "comment-avatar";
+        avatar.textContent = initial(comment.author);
 
-        if (!post.commentList.length) {
+        const content = document.createElement("div");
+        content.className = "comment-content";
 
-            const empty = document.createElement("p");
+        const author = document.createElement("strong");
+        author.textContent = comment.author;
 
-            empty.className = "no-comments";
+        const date = document.createElement("small");
+        date.textContent = formatDate(comment.created_at);
 
-            empty.textContent =
-                "No comments yet. Start the conversation!";
+        const message = document.createElement("p");
+        message.textContent = comment.content;
 
-            list.appendChild(empty);
+        content.append(author, date, message);
+        item.append(avatar, content);
+
+        if (comment.isOwn) {
+            const remove = document.createElement("button");
+
+            remove.type = "button";
+            remove.className = "delete-comment";
+            remove.textContent = "Delete";
+
+            remove.addEventListener("click", () => {
+                deleteComment(comment.id);
+            });
+
+            item.appendChild(remove);
         }
 
-        post.commentList.forEach(comment => {
+        list.appendChild(item);
+    });
 
-            const item = document.createElement("div");
+    section.appendChild(list);
 
-            item.className = "comment-item";
+    // Comment form
+    const form = document.createElement("form");
+    form.className = "comment-form";
 
-            const avatar = document.createElement("div");
+    const input = document.createElement("input");
 
-            avatar.className = "comment-avatar";
+    input.type = "text";
+    input.placeholder = "Write a comment...";
+    input.maxLength = 5000;
+    input.required = true;
+    input.autocomplete = "off";
+    input.setAttribute("aria-label", "Write a comment");
 
-            avatar.textContent =
-                initial(comment.author);
+    const submit = document.createElement("button");
 
-            const content = document.createElement("div");
+    submit.type = "submit";
+    submit.textContent = "Comment";
 
-            content.className = "comment-content";
+    form.append(input, submit);
 
-            const author = document.createElement("strong");
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
 
-            author.textContent = comment.author;
+        await createComment(post, input, submit);
+    });
 
-            const date = document.createElement("small");
+    section.appendChild(form);
 
-            date.textContent =
-                formatDate(comment.created_at);
-
-            const message = document.createElement("p");
-
-            message.textContent = comment.content;
-
-            content.append(author, date, message);
-
-            item.append(avatar, content);
-
-            if (comment.isOwn) {
-
-                const remove = document.createElement("button");
-
-                remove.type = "button";
-
-                remove.className = "delete-comment";
-
-                remove.textContent = "Delete";
-
-                remove.addEventListener("click", () => {
-                    deleteComment(comment.id);
-                });
-
-                item.appendChild(remove);
-            }
-
-            list.appendChild(item);
-        });
-
-        section.appendChild(list);
-
-        // Comment form
-
-        const form = document.createElement("form");
-
-        form.className = "comment-form";
-
-        const input = document.createElement("input");
-
-        input.type = "text";
-
-        input.placeholder = "Write a comment...";
-
-        input.maxLength = 5000;
-
-        input.required = true;
-
-        input.setAttribute(
-            "aria-label",
-            "Write a comment"
-        );
-
-        const submit = document.createElement("button");
-
-        submit.type = "submit";
-
-        submit.textContent = "Comment";
-
-        form.append(input, submit);
-
-        form.addEventListener("submit", event => {
-
-            event.preventDefault();
-
-            createComment(post, input, submit);
-        });
-
-        section.appendChild(form);
-
-        return section;
-    }
+    return section;
+}
 
     // ==========================================
     // RENDER POST MEDIA
