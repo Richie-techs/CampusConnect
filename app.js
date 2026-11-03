@@ -417,8 +417,7 @@ document.addEventListener("keydown", function (event) {
 
             if (error) throw error;
 
-            // Synchronize the logged-in user
-            updateUser(user);
+            
 
             const newPost = {
                 id: data.id,
