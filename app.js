@@ -1117,6 +1117,192 @@ function closeComposer() {
             }
         }
     }
+     
+// ==========================================
+// CAMPUSCONNECT PROFILE ENGINE
+// ==========================================
+
+async function loadMyProfile() {
+    if (!state.user || !db()) return;
+
+    const userId = state.user.id;
+
+    try {
+        const [profileResult, postsResult, followersResult, followingResult] =
+            await Promise.all([
+
+                db()
+                    .from("profiles")
+                    .select("*")
+                    .eq("id", userId)
+                    .single(),
+
+                db()
+                    .from("posts")
+                    .select("*")
+                    .eq("user_id", userId)
+                    .order("created_at", { ascending: false }),
+
+                db()
+                    .from("follows")
+                    .select("id", { count: "exact", head: true })
+                    .eq("following_id", userId),
+
+                db()
+                    .from("follows")
+                    .select("id", { count: "exact", head: true })
+                    .eq("follower_id", userId)
+            ]);
+
+        if (state.user?.id !== userId) return;
+
+        if (profileResult.error) throw profileResult.error;
+        if (postsResult.error) throw postsResult.error;
+        if (followersResult.error) throw followersResult.error;
+        if (followingResult.error) throw followingResult.error;
+
+        const profile = profileResult.data;
+        const posts = postsResult.data || [];
+
+        // PROFILE NAME
+        $("profile-full-name").textContent =
+            profile.full_name || "Student";
+
+        $("profile-username").textContent =
+            "@" + (profile.username || "student");
+
+        $("profile-bio").textContent =
+            profile.bio || "No biography added yet.";
+
+        $("profile-university").textContent =
+            profile.university || "University not added";
+
+        $("profile-department").textContent =
+            profile.department || "Department not added";
+
+        $("profile-level").textContent =
+            profile.level || "Level not added";
+
+        // PROFILE AVATAR
+        const avatar = $("profile-avatar");
+
+        if (avatar) {
+            avatar.replaceChildren();
+
+            if (profile.avatar_url) {
+                const image = document.createElement("img");
+                image.src = profile.avatar_url;
+                image.alt = "Profile picture";
+                avatar.appendChild(image);
+            } else {
+                avatar.textContent =
+                    (profile.full_name || "Student")
+                    .charAt(0).toUpperCase();
+            }
+        }
+
+        // COVER PHOTO
+        const cover = $("profile-cover-image");
+
+        if (cover) {
+            if (profile.cover_url) {
+                cover.src = profile.cover_url;
+                cover.hidden = false;
+            } else {
+                cover.removeAttribute("src");
+                cover.hidden = true;
+            }
+        }
+
+        // PROFILE STATISTICS
+        $("profile-post-count").textContent =
+            posts.length;
+
+        $("profile-followers-count").textContent =
+            followersResult.count || 0;
+
+        $("profile-following-count").textContent =
+            followingResult.count || 0;
+
+        // USER POSTS
+        renderProfilePosts(posts);
+
+        console.log("CampusConnect profile loaded:", profile);
+
+    } catch (error) {
+        console.error("Profile loading error:", error);
+        notify("Could not load profile: " + error.message);
+    }
+}
+
+
+// ==========================================
+// RENDER PROFILE POSTS
+// ==========================================
+
+function renderProfilePosts(posts) {
+    const container = $("profile-posts-container");
+
+    if (!container) return;
+
+    container.replaceChildren();
+
+    if (!posts.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+
+        const heading = document.createElement("h3");
+        heading.textContent = "No posts yet";
+
+        const message = document.createElement("p");
+        message.textContent =
+            "Your published posts will appear here.";
+
+        empty.append(heading, message);
+        container.appendChild(empty);
+
+        return;
+    }
+
+    posts.forEach(post => {
+        const card = document.createElement("article");
+        card.className = "post-card";
+
+        if (post.content) {
+            const content = document.createElement("p");
+            content.textContent = post.content;
+            card.appendChild(content);
+        }
+
+        if (post.image_url) {
+            const isVideo =
+                /\.(mp4|webm|mov)(\?|$)/i.test(post.image_url);
+
+            const media = document.createElement(
+                isVideo ? "video" : "img"
+            );
+
+            media.src = post.image_url;
+
+            if (isVideo) {
+                media.controls = true;
+                media.playsInline = true;
+            } else {
+                media.alt = "Post attachment";
+                media.loading = "lazy";
+            }
+
+            media.className = "post-media";
+            card.appendChild(media);
+        }
+
+        const date = document.createElement("small");
+        date.textContent = formatDate(post.created_at);
+
+        card.appendChild(date);
+        container.appendChild(card);
+    });
+}
 
     // ==========================================
     // NAVIGATION, FILTERS, SEARCH, COMPOSER
@@ -1143,6 +1329,9 @@ function closeComposer() {
             title.textContent =
                 page.charAt(0).toUpperCase() + page.slice(1);
         }
+if (page === "profile" && state.user) {
+    loadMyProfile();
+}
     }
 
     document.addEventListener("click", event => {
