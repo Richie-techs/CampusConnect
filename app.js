@@ -586,8 +586,12 @@ document.addEventListener("keydown", function (event) {
     // INITIALIZE
     // ==========================================
 
-    if (state.user) {
-    loadInitialPosts();
+    // Synchronize with an existing Supabase session
+const existingUser =
+    window.CampusConnect?.getCurrentUser?.();
+
+if (existingUser) {
+    updateUser(existingUser);
 } else {
     renderPosts();
 }
