@@ -1305,3 +1305,29 @@ body:not(.authenticated) .mobile-bottom-nav {
     cursor: pointer;
     z-index: 10002;
 }
+.follow-button {
+    margin-left: auto;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.follow-button:hover {
+    opacity: 0.85;
+}
+
+.follow-button.following {
+    background: transparent;
+    color: #2563eb;
+    border: 1px solid #2563eb;
+}
+
+.follow-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
