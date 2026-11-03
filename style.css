@@ -1006,3 +1006,33 @@ a {
 body:not(.authenticated) .mobile-bottom-nav {
     display: none !important;
 }
+/* Fix post image and video overflow */
+.post-media {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.post-media img,
+.post-media video {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Prevent feed content from overflowing */
+.post-card,
+.post-content,
+.posts-container {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.post-card img,
+.post-card video {
+    max-width: 100%;
+}
