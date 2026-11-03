@@ -1057,27 +1057,36 @@
             <label>Study Level</label>
             <input type="text" id="editLevel">
 
-            <div class="profile-upload-field">
-    <label for="editAvatar">Profile Picture</label>
+            
 
-    <input
-        type="file"
-        id="editAvatar"
-        name="avatar"
-        accept="image/*"
-        required="false"
-    >
+<div class="profile-upload-field">
+    <label>Profile Picture</label>
+
+    <button type="button" class="file-picker-button"
+        id="chooseAvatar">
+        <i data-lucide="image"></i>
+        Choose Profile Picture
+    </button>
+
+    <input type="file" id="editAvatar"
+        accept="image/*" hidden>
+
+    <span id="avatarFileName">No picture selected</span>
 </div>
 
 <div class="profile-upload-field">
-    <label for="editCover">Cover Photo</label>
+    <label>Cover Photo</label>
 
-    <input
-        type="file"
-        id="editCover"
-        name="cover"
-        accept="image/*"
-    >
+    <button type="button" class="file-picker-button"
+        id="chooseCover">
+        <i data-lucide="image-plus"></i>
+        Choose Cover Photo
+    </button>
+
+    <input type="file" id="editCover"
+        accept="image/*" hidden>
+
+    <span id="coverFileName">No picture selected</span>
 </div>
 
             <button type="submit" id="saveProfileButton">
