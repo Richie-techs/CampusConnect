@@ -756,6 +756,68 @@ async function createComment(post, input, button) {
             body.appendChild(image);
         }
     }
+// ==========================================
+// FOLLOW / UNFOLLOW SYSTEM
+// ==========================================
+
+async function toggleFollow(targetUserId, button) {
+
+    if (!state.user || !db()) return;
+
+    const currentUserId = state.user.id;
+
+    if (targetUserId === currentUserId) return;
+
+    const isFollowing =
+        state.followingIds.has(targetUserId);
+
+    button.disabled = true;
+
+    try {
+
+        if (isFollowing) {
+
+            const { error } = await db()
+                .from("follows")
+                .delete()
+                .eq("follower_id", currentUserId)
+                .eq("following_id", targetUserId);
+
+            if (error) throw error;
+
+            state.followingIds.delete(targetUserId);
+
+            button.textContent = "Follow";
+            button.classList.remove("following");
+
+        } else {
+
+            const { error } = await db()
+                .from("follows")
+                .insert({
+                    follower_id: currentUserId,
+                    following_id: targetUserId
+                });
+
+            if (error) throw error;
+
+            state.followingIds.add(targetUserId);
+
+            button.textContent = "Following";
+            button.classList.add("following");
+        }
+
+    } catch (error) {
+
+        console.error("Follow system error:", error);
+
+        notify("Follow action failed: " + error.message);
+
+    } finally {
+
+        button.disabled = false;
+    }
+}
 
     // ==========================================
     // RENDER POSTS
