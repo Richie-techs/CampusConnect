@@ -98,7 +98,9 @@
         if ($("dashboard")) $("dashboard").hidden = false;
 
         document.body.classList.add("authenticated");
-
+if (window.CampusConnectApp) {
+    window.CampusConnectApp.setCurrentUser(currentUser);
+}
         const name =
             currentUser?.user_metadata?.full_name ||
             currentUser?.email ||
