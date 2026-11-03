@@ -17,7 +17,8 @@
         loading: false,
         openComments: new Set(),
         channels: [],
-        interactionVersion: 0
+        interactionVersion: 0,
+followingIds: new Set()
     };
 
     const BUCKET = "campus-posts";
