@@ -1265,3 +1265,22 @@ body:not(.authenticated) .mobile-bottom-nav {
     font-weight: 600;
     cursor: pointer;
 }
+.profile-upload-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.profile-upload-field input[type="file"] {
+    display: block !important;
+    position: relative;
+    z-index: 10000;
+    width: 100%;
+    min-height: 45px;
+    padding: 10px;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    cursor: pointer;
+}
