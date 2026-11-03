@@ -127,6 +127,7 @@
 
         if (state.user) {
             loadPosts();
+loadMyProfile();
         } else {
             state.posts = [];
             state.openComments.clear();
