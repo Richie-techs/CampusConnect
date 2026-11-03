@@ -338,170 +338,75 @@
         }
     }
 
-    // ==========================================
-    // CREATE POST MODAL
-    // IMPORTANT: CSS uses .active, not .show
-    // ==========================================
+// ==========================================
+// POST COMPOSER MODAL
+// ==========================================
 
-    const modal = $("postModal");
+const modal = document.getElementById("postModal");
 
-    function openPostModal() {
-        if (!modal) {
-            console.error("Post modal not found.");
-            return;
-        }
+function openPostModal() {
+    if (!modal) {
+        console.error("Post modal #postModal was not found.");
+        return;
+    }
 
-        modal.classList.add("active");
-        modal.setAttribute("aria-hidden", "false");
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
 
-        $("postContent")?.focus();
-    }
+    const input = document.getElementById("postContent");
 
-    function closePostModal() {
-        if (!modal) return;
+    if (input) {
+        setTimeout(() => input.focus(), 100);
+    }
+}
 
-        modal.classList.remove("active");
-        modal.setAttribute("aria-hidden", "true");
-    }
+function closePostModal() {
+    if (!modal) return;
 
-    [
-        "createPostBtn",
-        "openPostComposer",
-        "openPostModal"
-    ].forEach(id => {
-        $(id)?.addEventListener("click", event => {
-            event.preventDefault();
-            openPostModal();
-        });
-    });
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+}
 
-    $("closePostModal")?.addEventListener(
-        "click",
-        closePostModal
-    );
+// Open composer buttons
+document.addEventListener("click", function (event) {
+    const openButton = event.target.closest(
+        "#createPostBtn, #openPostComposer, #openPostModal, #discussionPostBtn, #studyPostBtn, #photoPostBtn"
+    );
 
-    modal?.addEventListener("click", event => {
-        if (event.target === modal) {
-            closePostModal();
-        }
-    });
+    if (openButton) {
+        event.preventDefault();
+        openPostModal();
+        return;
+    }
 
-    document.addEventListener("keydown", event => {
-        if (event.key === "Escape") {
-            closePostModal();
-        }
-    });
+    // Close button
+    const closeButton = event.target.closest(
+        "#closePostModal, #closePostComposer"
+    );
 
-    // ==========================================
-    // PUBLISH POST
-    // ==========================================
+    if (closeButton) {
+        event.preventDefault();
+        closePostModal();
+        return;
+    }
 
-    function createPost() {
-        const input = $("postContent");
+    // Close when clicking outside the composer
+    if (event.target === modal) {
+        closePostModal();
+    }
+});
 
-        if (!input) {
-            alert("Post editor not found.");
-            return;
-        }
+// Close with Escape key
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        closePostModal();
+    }
+});
 
-        const content = input.value.trim();
 
-        if (!content) {
-            alert("Please write something before publishing.");
-            input.focus();
-            return;
-        }
-
-        const newPost = {
-            id: `post-${Date.now()}`,
-            author: getUserName(),
-            username: getUsername(),
-            details: "Just now",
-            time: "Just now",
-            content,
-            category: "social",
-            likes: 0,
-            comments: 0,
-            liked: false,
-            isNew: true
-        };
-
-        state.posts.unshift(newPost);
-
-        input.value = "";
-        state.filter = "all";
-        state.search = "";
-
-        if ($("feedFilter")) {
-            $("feedFilter").value = "all";
-        }
-
-        if ($("searchInput")) {
-            $("searchInput").value = "";
-        }
-
-        renderPosts();
-        closePostModal();
-        navigate("home");
-    }
-
-    $("publishPost")?.addEventListener("click", event => {
-        event.preventDefault();
-        createPost();
-    });
-
-    // ==========================================
-    // SEARCH
-    // ==========================================
-
-    $("searchInput")?.addEventListener("input", event => {
-        state.search = event.target.value
-            .trim()
-            .toLowerCase();
-
-        renderPosts();
-    });
-
-    // ==========================================
-    // FEED FILTERS
-    // ==========================================
-
-    $("feedFilter")?.addEventListener("change", event => {
-        state.filter = event.target.value.toLowerCase();
-        renderPosts();
-    });
-
-    // ==========================================
-    // PHOTO / DISCUSSION / STUDY BUTTONS
-    // ==========================================
-
-    $("photoPostBtn")?.addEventListener("click", () => {
-        openPostModal();
-        alert("Photo uploads will be connected to Supabase Storage.");
-    });
-
-    $("discussionPostBtn")?.addEventListener("click", () => {
-        openPostModal();
-    });
-
-    $("studyPostBtn")?.addEventListener("click", () => {
-        openPostModal();
-    });
-
-    // ==========================================
-    // LOGOUT VISIBILITY
-    // Actual signOut is handled by auth.js.
-    // Do not create a second logout handler.
-    // ==========================================
-
-    const logoutButton = $("logout-button");
-
-    if (logoutButton) {
-        logoutButton.style.display = "flex";
-        logoutButton.title = "Logout";
-        logoutButton.setAttribute("aria-label", "Logout");
-    }
-
+  
+    
+   
     // ==========================================
     // INITIALIZE
     // ==========================================
