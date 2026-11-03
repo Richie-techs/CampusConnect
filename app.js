@@ -3,84 +3,120 @@
     "use strict";
 
     // ==========================================
-    // CAMPUSCONNECT - APPLICATION ENGINE
-    // Frontend repair version
+    // CAMPUSCONNECT APPLICATION ENGINE
+    // Matched to current index.html and style.css
     // ==========================================
 
-    const $ = (id) => document.getElementById(id);
+    const $ = id => document.getElementById(id);
 
-    const firstElement = (...ids) => {
-        for (const id of ids) {
-            const element = $(id);
-            if (element) return element;
-        }
-        return null;
+    const state = {
+        user: null,
+        posts: [],
+        filter: "all",
+        search: ""
     };
 
+    const getUserName = () =>
+        state.user?.user_metadata?.full_name ||
+        state.user?.email ||
+        "Student";
+
+    const getUsername = () =>
+        state.user?.user_metadata?.username ||
+        "student";
+
+    const getAvatar = () =>
+        getUserName().charAt(0).toUpperCase();
+
     // ==========================================
-    // APPLICATION STATE
+    // AUTHENTICATED USER
     // ==========================================
 
-    let currentUser = {
-        id: null,
-        name: "Student",
-        username: "student",
-        avatar: "S"
-    };
+    function updateUser(user) {
+        state.user = user || null;
 
-    // Allow the authentication system to supply the user.
-    function setCurrentUser(user) {
-        if (!user) return;
+        const name = getUserName();
+        const avatar = getAvatar();
 
-        currentUser = {
-            id: user.id || null,
-            name: user.name || user.full_name || user.email || "Student",
-            username: user.username || "student",
-            avatar: user.avatar || (user.name || "S").charAt(0).toUpperCase()
-        };
+        document.querySelectorAll("[data-user-name]").forEach(el => {
+            el.textContent = name;
+        });
+
+        document.querySelectorAll(".sidebar-profile h4").forEach(el => {
+            el.textContent = name;
+        });
+
+        document.querySelectorAll(".avatar-purple").forEach(el => {
+            el.textContent = avatar;
+        });
 
         renderPosts();
     }
 
+    // Authentication system can call this after login.
     window.CampusConnectApp = {
-        setCurrentUser
+        setCurrentUser: updateUser
     };
 
-    if (window.CAMPUSCONNECT_USER) {
-        setCurrentUser(window.CAMPUSCONNECT_USER);
-    }
+    // ==========================================
+    // INITIAL POSTS
+    // Read existing HTML posts instead of
+    // destroying the original feed.
+    // ==========================================
 
-    // Temporary sample data.
-    // Supabase integration will replace this storage.
-    let posts = [
-        {
-            id: 1,
-            author: "Ama Serwaa",
-            username: "ama_serwaa",
-            avatar: "A",
-            time: "12 minutes ago",
-            content: "Anyone preparing for the upcoming Computer Science quiz? Let's create a study group!",
-            likes: 24,
-            comments: 8,
-            liked: false,
-            category: "Academic"
-        },
-        {
-            id: 2,
-            author: "Kwame Boateng",
-            username: "kwame_b",
-            avatar: "K",
-            time: "35 minutes ago",
-            content: "University life becomes easier when you surround yourself with people who share your goals. Keep pushing!",
-            likes: 42,
-            comments: 12,
-            liked: false,
-            category: "General"
+    function loadInitialPosts() {
+        const container = $("postsContainer");
+
+        if (!container) {
+            console.error("postsContainer was not found.");
+            return;
         }
-    ];
 
-    let activeFilter = "All";
-    let searchQuery = "";
+        const cards = container.querySelectorAll(".post-card");
+
+        state.posts = Array.from(cards).map((card, index) => {
+            const category = (
+                card.dataset.category || "general"
+            ).toLowerCase();
+
+            const author =
+                card.querySelector(".post-author h4")?.textContent.trim() ||
+                card.querySelector(".post-header h4")?.textContent.trim() ||
+                "Student";
+
+            const content =
+                card.querySelector(".post-body p")?.textContent.trim() ||
+                "";
+
+            const details =
+                card.querySelector(".post-author p")?.textContent.trim() ||
+                "";
+
+            const likeCount = Number(
+                card.querySelector(".like-button span")?.textContent || 0
+            );
+
+            const commentText =
+                card.querySelector(".comment-button span")?.textContent || "";
+
+            const commentCount = Number(
+                commentText.match(/\d+/)?.[0] || 0
+            );
+
+            return {
+                id: `sample-${index}`,
+                author,
+                username: author.toLowerCase().replace(/\s+/g, "_"),
+                details,
+                content,
+                category,
+                likes: likeCount,
+                comments: commentCount,
+                liked: false,
+                time: details.split("·").pop()?.trim() || "Recently"
+            };
+        });
+    }
 
     // ==========================================
     // NAVIGATION
@@ -89,19 +125,24 @@
     function navigate(page) {
         if (!page) return;
 
-        document.querySelectorAll("[data-page]").forEach(section => {
+        const sections = document.querySelectorAll(".page-section");
+
+        sections.forEach(section => {
+            const sectionPage =
+                section.dataset.page ||
+                section.id.replace("page-", "");
+
             section.classList.toggle(
                 "active",
-                section.dataset.page === page
+                sectionPage === page
             );
         });
 
-        const navItems = document.querySelectorAll(
-            "[data-nav], nav [data-page], .sidebar [data-page], .bottom-nav [data-page]"
-        );
-
-        navItems.forEach(item => {
-            const destination = item.dataset.nav || item.dataset.page;
+        document.querySelectorAll(
+            "[data-page], [data-nav]"
+        ).forEach(item => {
+            const destination =
+                item.dataset.page || item.dataset.nav;
 
             item.classList.toggle(
                 "active",
@@ -116,27 +157,28 @@
                 page.charAt(0).toUpperCase() + page.slice(1);
         }
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+        closePostModal();
+        window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    // Support both navigation attribute formats.
-    document.querySelectorAll(
-        "[data-nav], nav [data-page], .sidebar [data-page], .bottom-nav [data-page]"
-    ).forEach(item => {
-        item.addEventListener("click", event => {
+    document.addEventListener("click", event => {
+        const nav = event.target.closest("[data-page], [data-nav]");
+
+        if (!nav) return;
+
+        // Do not interfere with logout or other actions.
+        if (nav.id === "logout-button") return;
+
+        const page = nav.dataset.page || nav.dataset.nav;
+
+        if (page) {
             event.preventDefault();
-
-            const page = item.dataset.nav || item.dataset.page;
-
             navigate(page);
-        });
+        }
     });
 
     // ==========================================
-    // POST RENDERING
+    // FEED RENDERING
     // ==========================================
 
     function renderPosts() {
@@ -144,314 +186,205 @@
 
         if (!container) return;
 
-        const filteredPosts = posts.filter(post => {
+        const visiblePosts = state.posts.filter(post => {
             const matchesCategory =
-                activeFilter === "All" ||
-                post.category === activeFilter;
+                state.filter === "all" ||
+                post.category === state.filter;
 
-            const searchableText = (
+            const text = (
                 post.author + " " +
                 post.username + " " +
+                post.details + " " +
                 post.content
             ).toLowerCase();
 
             const matchesSearch =
-                searchableText.includes(searchQuery);
+                text.includes(state.search);
 
             return matchesCategory && matchesSearch;
         });
 
         container.replaceChildren();
 
-        if (filteredPosts.length === 0) {
-            const emptyMessage = document.createElement("p");
+        if (!visiblePosts.length) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
 
-            emptyMessage.className = "empty-state";
-            emptyMessage.textContent = "No posts found.";
+            const heading = document.createElement("h3");
+            heading.textContent = "No posts found";
 
-            container.appendChild(emptyMessage);
+            const message = document.createElement("p");
+            message.textContent =
+                "Try another search or choose a different category.";
+
+            empty.append(heading, message);
+            container.appendChild(empty);
             return;
         }
 
-        filteredPosts.forEach(post => {
+        visiblePosts.forEach(post => {
             const article = document.createElement("article");
             article.className = "post-card";
 
-            // Header
+            article.dataset.category = post.category;
+
             const header = document.createElement("div");
             header.className = "post-header";
 
             const avatar = document.createElement("div");
-            avatar.className = "post-avatar";
-            avatar.textContent = post.avatar;
+            avatar.className = "avatar avatar-purple";
+            avatar.textContent =
+                post.isNew ? getAvatar() : post.author.charAt(0);
 
             const authorInfo = document.createElement("div");
+            authorInfo.className = "post-author";
 
-            const author = document.createElement("strong");
+            const author = document.createElement("h4");
             author.textContent = post.author;
 
-            const username = document.createElement("small");
-            username.textContent =
-                `@${post.username} · ${post.time}`;
+            const details = document.createElement("p");
+            details.textContent = post.details || post.time;
 
-            authorInfo.append(author, username);
+            authorInfo.append(author, details);
             header.append(avatar, authorInfo);
 
-            // Content
-            const content = document.createElement("p");
-            content.className = "post-content";
-            content.textContent = post.content;
+            const body = document.createElement("div");
+            body.className = "post-body";
 
-            // Actions
-            const actions = document.createElement("div");
-            actions.className = "post-actions";
+            const paragraph = document.createElement("p");
+            paragraph.textContent = post.content;
 
-            // Like button
+            body.appendChild(paragraph);
+
+            const footer = document.createElement("div");
+            footer.className = "post-footer";
+
             const likeButton = document.createElement("button");
-            likeButton.type = "button";
-            likeButton.className = "post-action";
+            likeButton.className =
+                "like-button" + (post.liked ? " liked" : "");
+
+            const likeIcon = document.createElement("i");
+            likeIcon.setAttribute("data-lucide", "heart");
+
+            const likeCount = document.createElement("span");
+            likeCount.textContent = post.likes;
 
             likeButton.setAttribute(
                 "aria-pressed",
                 String(post.liked)
             );
 
-            likeButton.textContent =
-                `${post.liked ? "❤️" : "🤍"} ${post.likes} Likes`;
+            likeButton.append(likeIcon, likeCount);
 
             likeButton.addEventListener("click", () => {
                 post.liked = !post.liked;
-
                 post.likes = Math.max(
                     0,
                     post.likes + (post.liked ? 1 : -1)
                 );
-
                 renderPosts();
             });
 
-            // Comment button
             const commentButton = document.createElement("button");
-            commentButton.type = "button";
-            commentButton.className = "post-action";
-            commentButton.textContent =
-                `💬 ${post.comments} Comments`;
+            commentButton.className = "comment-button";
+
+            const commentIcon = document.createElement("i");
+            commentIcon.setAttribute(
+                "data-lucide",
+                "message-circle"
+            );
+
+            const commentCount = document.createElement("span");
+            commentCount.textContent =
+                `${post.comments} Comments`;
+
+            commentButton.append(commentIcon, commentCount);
 
             commentButton.addEventListener("click", () => {
-                if (typeof window.openComments === "function") {
-                    window.openComments(post.id);
-                } else {
-                    alert(
-                        "The comments interface has not been connected yet."
-                    );
-                }
+                alert("Comments will be connected to Supabase next.");
             });
 
-            // Share button
             const shareButton = document.createElement("button");
-            shareButton.type = "button";
-            shareButton.className = "post-action";
-            shareButton.textContent = "↗ Share";
+
+            const shareIcon = document.createElement("i");
+            shareIcon.setAttribute("data-lucide", "repeat-2");
+
+            const shareText = document.createElement("span");
+            shareText.textContent = "Share";
+
+            shareButton.append(shareIcon, shareText);
 
             shareButton.addEventListener("click", async () => {
                 try {
                     await navigator.clipboard.writeText(post.content);
-                    alert("Post copied to clipboard!");
+                    alert("Post copied!");
                 } catch {
                     alert(post.content);
                 }
             });
 
-            actions.append(
+            footer.append(
                 likeButton,
                 commentButton,
                 shareButton
             );
 
-            article.append(
-                header,
-                content,
-                actions
-            );
-
+            article.append(header, body, footer);
             container.appendChild(article);
         });
-    }
 
-    // ==========================================
-    // CREATE POST
-    // ==========================================
-
-    function createPost() {
-        const input = firstElement(
-            "postContent",
-            "postInput"
-        );
-
-        if (!input) {
-            console.error("Post textarea was not found.");
-            alert("Post editor could not be found.");
-            return;
+        if (window.lucide) {
+            window.lucide.createIcons();
         }
-
-        const content = input.value.trim();
-
-        if (!content) {
-            alert("Please write something first.");
-            input.focus();
-            return;
-        }
-
-        const newPost = {
-            id: Date.now(),
-            author: currentUser.name,
-            username: currentUser.username,
-            avatar: currentUser.avatar,
-            time: "Just now",
-            content,
-            likes: 0,
-            comments: 0,
-            liked: false,
-            category: "General"
-        };
-
-        posts.unshift(newPost);
-
-        input.value = "";
-
-        renderPosts();
-        navigate("home");
-        closePostModal();
-    }
-
-    const publishButton = firstElement(
-        "publishPost",
-        "submitPostBtn"
-    );
-
-    if (publishButton) {
-        publishButton.addEventListener("click", event => {
-            event.preventDefault();
-            createPost();
-        });
     }
 
     // ==========================================
-    // POST FILTERS
-    // Supports buttons AND select dropdown.
-    // ==========================================
-
-    function updateFilter(filter) {
-        activeFilter = filter || "All";
-
-        document.querySelectorAll("[data-filter]").forEach(item => {
-            item.classList.toggle(
-                "active",
-                item.dataset.filter === activeFilter
-            );
-        });
-
-        const filterSelect = $("feedFilter");
-
-        if (filterSelect && filterSelect.value !== activeFilter) {
-            filterSelect.value = activeFilter;
-        }
-
-        renderPosts();
-    }
-
-    document.querySelectorAll("[data-filter]").forEach(button => {
-        button.addEventListener("click", () => {
-            updateFilter(button.dataset.filter);
-        });
-    });
-
-    const feedFilter = $("feedFilter");
-
-    if (feedFilter) {
-        feedFilter.addEventListener("change", () => {
-            updateFilter(feedFilter.value);
-        });
-    }
-
-    // ==========================================
-    // SEARCH
-    // ==========================================
-
-    const searchInput = $("searchInput");
-
-    if (searchInput) {
-        searchInput.addEventListener("input", () => {
-            searchQuery = searchInput.value
-                .trim()
-                .toLowerCase();
-
-            renderPosts();
-        });
-    }
-
-    // ==========================================
-    // POST COMPOSER MODAL
-    // Supports old and new HTML IDs.
+    // CREATE POST MODAL
+    // IMPORTANT: CSS uses .active, not .show
     // ==========================================
 
     const modal = $("postModal");
 
     function openPostModal() {
-        if (!modal) return;
+        if (!modal) {
+            console.error("Post modal not found.");
+            return;
+        }
 
-        modal.classList.add("show");
+        modal.classList.add("active");
         modal.setAttribute("aria-hidden", "false");
 
-        const input = firstElement(
-            "postContent",
-            "postInput"
-        );
-
-        if (input) {
-            input.focus();
-        }
+        $("postContent")?.focus();
     }
 
     function closePostModal() {
         if (!modal) return;
 
-        modal.classList.remove("show");
+        modal.classList.remove("active");
         modal.setAttribute("aria-hidden", "true");
     }
 
-    const openModalButtons = [
-        $("openPostModal"),
-        $("openPostComposer"),
-        $("createPostBtn")
-    ].filter(Boolean);
-
-    openModalButtons.forEach(button => {
-        button.addEventListener("click", event => {
+    [
+        "createPostBtn",
+        "openPostComposer",
+        "openPostModal"
+    ].forEach(id => {
+        $(id)?.addEventListener("click", event => {
             event.preventDefault();
             openPostModal();
         });
     });
 
-    const closeModalButton = firstElement(
-        "closePostModal",
-        "closePostComposer"
+    $("closePostModal")?.addEventListener(
+        "click",
+        closePostModal
     );
 
-    if (closeModalButton) {
-        closeModalButton.addEventListener(
-            "click",
-            closePostModal
-        );
-    }
-
-    if (modal) {
-        modal.addEventListener("click", event => {
-            if (event.target === modal) {
-                closePostModal();
-            }
-        });
-    }
+    modal?.addEventListener("click", event => {
+        if (event.target === modal) {
+            closePostModal();
+        }
+    });
 
     document.addEventListener("keydown", event => {
         if (event.key === "Escape") {
@@ -460,14 +393,122 @@
     });
 
     // ==========================================
-    // INITIALIZATION
+    // PUBLISH POST
     // ==========================================
 
+    function createPost() {
+        const input = $("postContent");
+
+        if (!input) {
+            alert("Post editor not found.");
+            return;
+        }
+
+        const content = input.value.trim();
+
+        if (!content) {
+            alert("Please write something before publishing.");
+            input.focus();
+            return;
+        }
+
+        const newPost = {
+            id: `post-${Date.now()}`,
+            author: getUserName(),
+            username: getUsername(),
+            details: "Just now",
+            time: "Just now",
+            content,
+            category: "social",
+            likes: 0,
+            comments: 0,
+            liked: false,
+            isNew: true
+        };
+
+        state.posts.unshift(newPost);
+
+        input.value = "";
+        state.filter = "all";
+        state.search = "";
+
+        if ($("feedFilter")) {
+            $("feedFilter").value = "all";
+        }
+
+        if ($("searchInput")) {
+            $("searchInput").value = "";
+        }
+
+        renderPosts();
+        closePostModal();
+        navigate("home");
+    }
+
+    $("publishPost")?.addEventListener("click", event => {
+        event.preventDefault();
+        createPost();
+    });
+
+    // ==========================================
+    // SEARCH
+    // ==========================================
+
+    $("searchInput")?.addEventListener("input", event => {
+        state.search = event.target.value
+            .trim()
+            .toLowerCase();
+
+        renderPosts();
+    });
+
+    // ==========================================
+    // FEED FILTERS
+    // ==========================================
+
+    $("feedFilter")?.addEventListener("change", event => {
+        state.filter = event.target.value.toLowerCase();
+        renderPosts();
+    });
+
+    // ==========================================
+    // PHOTO / DISCUSSION / STUDY BUTTONS
+    // ==========================================
+
+    $("photoPostBtn")?.addEventListener("click", () => {
+        openPostModal();
+        alert("Photo uploads will be connected to Supabase Storage.");
+    });
+
+    $("discussionPostBtn")?.addEventListener("click", () => {
+        openPostModal();
+    });
+
+    $("studyPostBtn")?.addEventListener("click", () => {
+        openPostModal();
+    });
+
+    // ==========================================
+    // LOGOUT VISIBILITY
+    // Actual signOut is handled by auth.js.
+    // Do not create a second logout handler.
+    // ==========================================
+
+    const logoutButton = $("logout-button");
+
+    if (logoutButton) {
+        logoutButton.style.display = "flex";
+        logoutButton.title = "Logout";
+        logoutButton.setAttribute("aria-label", "Logout");
+    }
+
+    // ==========================================
+    // INITIALIZE
+    // ==========================================
+
+    loadInitialPosts();
     renderPosts();
 
-    console.log(
-        "CampusConnect application engine initialized."
-    );
+    console.log("CampusConnect application engine ready.");
 
 })();
-
