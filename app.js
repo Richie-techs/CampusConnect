@@ -32,32 +32,35 @@
     // AUTHENTICATED USER
     // ==========================================
 
-    function updateUser(user) {
-        state.user = user || null;
+    
+function updateUser(user) {
+    state.user = user || null;
 
-        const name = getUserName();
-        const avatar = getAvatar();
+    const name = getUserName();
+    const avatar = getAvatar();
 
-        document.querySelectorAll("[data-user-name]").forEach(el => {
-            el.textContent = name;
-        });
+    document.querySelectorAll("[data-user-name]").forEach(el => {
+        el.textContent = name;
+    });
 
-        document.querySelectorAll(".sidebar-profile h4").forEach(el => {
-            el.textContent = name;
-        });
+    document.querySelectorAll(".sidebar-profile h4").forEach(el => {
+        el.textContent = name;
+    });
 
-        document.querySelectorAll(".avatar-purple").forEach(el => {
-            el.textContent = avatar;
-        });
+    document.querySelectorAll(".avatar-purple").forEach(el => {
+        el.textContent = avatar;
+    });
 
-        if (state.user) {
-    loadInitialPosts();
-} else {
-    state.posts = [];
-    renderPosts();
-}
+    if (state.user) {
+        loadInitialPosts();
+    } else {
+        state.posts = [];
+        renderPosts();
     }
+}
 
+
+        
     // Authentication system can call this after login.
     window.CampusConnectApp = {
         setCurrentUser: updateUser
