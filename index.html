@@ -1028,6 +1028,48 @@
         </div>
 
     </div>
+<!-- EDIT PROFILE MODAL -->
+<div class="edit-profile-modal" id="editProfileModal" hidden>
+    <div class="edit-profile-dialog">
+
+        <div class="edit-profile-header">
+            <h2>Edit Profile</h2>
+            <button type="button" id="closeEditProfile">✕</button>
+        </div>
+
+        <form id="editProfileForm">
+
+            <label>Full Name</label>
+            <input type="text" id="editFullName" maxlength="100" required>
+
+            <label>Username</label>
+            <input type="text" id="editUsername" maxlength="30" required>
+
+            <label>Biography</label>
+            <textarea id="editBio" maxlength="300"></textarea>
+
+            <label>University</label>
+            <input type="text" id="editUniversity">
+
+            <label>Department</label>
+            <input type="text" id="editDepartment">
+
+            <label>Study Level</label>
+            <input type="text" id="editLevel">
+
+            <label>Profile Picture</label>
+            <input type="file" id="editAvatar" accept="image/*">
+
+            <label>Cover Photo</label>
+            <input type="file" id="editCover" accept="image/*">
+
+            <button type="submit" id="saveProfileButton">
+                Save Changes
+            </button>
+
+        </form>
+    </div>
+</div>
 
 </section>
 
