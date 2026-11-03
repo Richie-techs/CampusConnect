@@ -1321,6 +1321,177 @@ function renderProfilePosts(posts) {
         container.appendChild(card);
     });
 }
+// ==========================================
+// EDIT PROFILE SYSTEM
+// ==========================================
+
+const editProfileModal = $("editProfileModal");
+
+function openEditProfile() {
+    if (!state.user || !editProfileModal) return;
+
+    const fullName = $("profile-full-name")?.textContent || "";
+    const username = $("profile-username")?.textContent || "";
+    const bio = $("profile-bio")?.textContent || "";
+
+    $("editFullName").value =
+        fullName === "Student" ? "" : fullName;
+
+    $("editUsername").value =
+        username.replace(/^@/, "");
+
+    $("editBio").value =
+        bio === "No biography added yet." ? "" : bio;
+
+    $("editUniversity").value =
+        $("profile-university")?.textContent.trim() || "";
+
+    $("editDepartment").value =
+        $("profile-department")?.textContent.trim() || "";
+
+    $("editLevel").value =
+        $("profile-level")?.textContent.trim() || "";
+
+    $("editAvatar").value = "";
+    $("editCover").value = "";
+
+    editProfileModal.hidden = false;
+}
+
+function closeEditProfile() {
+    if (editProfileModal) {
+        editProfileModal.hidden = true;
+    }
+}
+
+async function uploadProfileImage(file, folder, userId) {
+    if (!file) return null;
+
+    if (!file.type.startsWith("image/")) {
+        throw new Error("Please select a valid image.");
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Profile images must be 5MB or smaller.");
+    }
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    const filePath =
+        `${userId}/${folder}-${Date.now()}.${extension}`;
+
+    const { error } = await db()
+        .storage
+        .from("campus-posts")
+        .upload(filePath, file, {
+            contentType: file.type,
+            upsert: false
+        });
+
+    if (error) throw error;
+
+    const { data } = db()
+        .storage
+        .from("campus-posts")
+        .getPublicUrl(filePath);
+
+    return data.publicUrl;
+}
+
+async function saveProfile(event) {
+    event.preventDefault();
+
+    if (!state.user || !db()) return;
+
+    const button = $("saveProfileButton");
+    const userId = state.user.id;
+
+    button.disabled = true;
+    button.textContent = "Saving...";
+
+    try {
+        const fullName = $("editFullName").value.trim();
+        const username = $("editUsername").value.trim()
+            .replace(/^@/, "");
+
+        if (!fullName || !username) {
+            throw new Error("Full name and username are required.");
+        }
+
+        const profileData = {
+            full_name: fullName,
+            username: username,
+            bio: $("editBio").value.trim(),
+            university: $("editUniversity").value.trim(),
+            department: $("editDepartment").value.trim(),
+            level: $("editLevel").value.trim(),
+            updated_at: new Date().toISOString()
+        };
+
+        const avatarFile = $("editAvatar").files[0];
+        const coverFile = $("editCover").files[0];
+
+        if (avatarFile) {
+            profileData.avatar_url = await uploadProfileImage(
+                avatarFile,
+                "avatar",
+                userId
+            );
+        }
+
+        if (coverFile) {
+            profileData.cover_url = await uploadProfileImage(
+                coverFile,
+                "cover",
+                userId
+            );
+        }
+
+        const { error } = await db()
+            .from("profiles")
+            .update(profileData)
+            .eq("id", userId);
+
+        if (error) throw error;
+
+        closeEditProfile();
+
+        await loadMyProfile();
+
+        notify("Profile updated successfully!");
+
+    } catch (error) {
+        console.error("Profile update error:", error);
+        notify("Could not update profile: " + error.message);
+
+    } finally {
+        button.disabled = false;
+        button.textContent = "Save Changes";
+    }
+}
+
+// PROFILE EVENT LISTENERS
+
+$("edit-profile-button")?.addEventListener(
+    "click",
+    openEditProfile
+);
+
+$("closeEditProfile")?.addEventListener(
+    "click",
+    closeEditProfile
+);
+
+$("editProfileForm")?.addEventListener(
+    "submit",
+    saveProfile
+);
+
+editProfileModal?.addEventListener("click", event => {
+    if (event.target === editProfileModal) {
+        closeEditProfile();
+    }
+});
 
     // ==========================================
     // NAVIGATION, FILTERS, SEARCH, COMPOSER
