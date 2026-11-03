@@ -4,7 +4,6 @@
 
     // ==========================================
     // CAMPUSCONNECT APPLICATION ENGINE
-    // Matched to current index.html and style.css
     // ==========================================
 
     const $ = id => document.getElementById(id);
@@ -13,7 +12,8 @@
         user: null,
         posts: [],
         filter: "all",
-        search: ""
+        search: "",
+        loadingPosts: false
     };
 
     const getUserName = () =>
@@ -29,50 +29,40 @@
         getUserName().charAt(0).toUpperCase();
 
     // ==========================================
-    // AUTHENTICATED USER
+    // USER AUTHENTICATION SYNCHRONIZATION
     // ==========================================
 
-    
-function updateUser(user) {
-    state.user = user || null;
+    function updateUser(user) {
+        state.user = user || null;
 
-    const name = getUserName();
-    const avatar = getAvatar();
+        document.querySelectorAll("[data-user-name]").forEach(el => {
+            el.textContent = getUserName();
+        });
 
-    document.querySelectorAll("[data-user-name]").forEach(el => {
-        el.textContent = name;
-    });
+        document.querySelectorAll("[data-user-email]").forEach(el => {
+            el.textContent = state.user?.email || "";
+        });
 
-    document.querySelectorAll(".sidebar-profile h4").forEach(el => {
-        el.textContent = name;
-    });
+        document.querySelectorAll(".sidebar-profile h4").forEach(el => {
+            el.textContent = getUserName();
+        });
 
-    document.querySelectorAll(".avatar-purple").forEach(el => {
-        el.textContent = avatar;
-    });
+        document.querySelectorAll(".avatar-purple").forEach(el => {
+            el.textContent = getAvatar();
+        });
 
-    if (state.user) {
-        loadInitialPosts();
-    } else {
-        state.posts = [];
-        renderPosts();
+        if (state.user) {
+            loadInitialPosts();
+        } else {
+            state.posts = [];
+            renderPosts();
+        }
     }
-}
 
-
-        
-    // Authentication system can call this after login.
     window.CampusConnectApp = {
         setCurrentUser: updateUser
     };
 
-    // ==========================================
-    // INITIAL POSTS
-    // Read existing HTML posts instead of
-    // destroying the original feed.
-    // ==========================================
-
-    
     // ==========================================
     // LOAD POSTS FROM SUPABASE
     // ==========================================
@@ -80,6 +70,84 @@ function updateUser(user) {
     async function loadInitialPosts() {
         const container = $("postsContainer");
         const db = window.CampusConnect?.db;
+
+        if (!container) {
+            console.error("CampusConnect: postsContainer missing.");
+            return;
+        }
+
+        if (!db) {
+            console.error("CampusConnect: Supabase client missing.");
+            return;
+        }
+
+        if (!state.user) return;
+
+        if (state.loadingPosts) return;
+
+        state.loadingPosts = true;
+
+        try {
+            const { data, error } = await db
+                .from("posts")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            state.posts = (data || []).map(post => {
+                const isOwnPost =
+                    post.user_id === state.user?.id;
+
+                const date = post.created_at
+                    ? new Date(post.created_at)
+                    : null;
+
+                return {
+                    id: post.id,
+                    user_id: post.user_id,
+
+                    author: isOwnPost
+                        ? getUserName()
+                        : "Student",
+
+                    username: isOwnPost
+                        ? getUsername()
+                        : "student",
+
+                    details: date
+                        ? date.toLocaleString()
+                        : "Recently",
+
+                    time: date
+                        ? date.toLocaleString()
+                        : "Recently",
+
+                    content: post.content || "",
+                    category: post.category || "social",
+                    image_url: post.image_url,
+
+                    likes: 0,
+                    comments: 0,
+                    liked: false,
+                    isNew: false
+                };
+            });
+
+            renderPosts();
+
+            console.log(
+                "CampusConnect: Posts loaded:",
+                state.posts.length
+            );
+
+        } catch (error) {
+            console.error("Could not load posts:", error);
+        } finally {
+            state.loadingPosts = false;
+        }
+    }
+
     // ==========================================
     // NAVIGATION
     // ==========================================
@@ -120,16 +188,21 @@ function updateUser(user) {
         }
 
         closePostModal();
-        window.scrollTo({ top: 0, behavior: "smooth" });
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
     }
 
     document.addEventListener("click", event => {
-        const nav = event.target.closest("[data-page], [data-nav]");
+        const target = event.target;
 
-        if (!nav) return;
+        if (!(target instanceof Element)) return;
 
-        // Do not interfere with logout or other actions.
-        if (nav.id === "logout-button") return;
+        const nav = target.closest("[data-page], [data-nav]");
+
+        if (!nav || nav.id === "logout-button") return;
 
         const page = nav.dataset.page || nav.dataset.nav;
 
@@ -153,15 +226,15 @@ function updateUser(user) {
                 state.filter === "all" ||
                 post.category === state.filter;
 
-            const text = (
-                post.author + " " +
-                post.username + " " +
-                post.details + " " +
+            const searchableText = [
+                post.author,
+                post.username,
+                post.details,
                 post.content
-            ).toLowerCase();
+            ].join(" ").toLowerCase();
 
             const matchesSearch =
-                text.includes(state.search);
+                searchableText.includes(state.search);
 
             return matchesCategory && matchesSearch;
         });
@@ -177,7 +250,9 @@ function updateUser(user) {
 
             const message = document.createElement("p");
             message.textContent =
-                "Try another search or choose a different category.";
+                state.posts.length
+                    ? "Try another search or category."
+                    : "Be the first to share something with your campus.";
 
             empty.append(heading, message);
             container.appendChild(empty);
@@ -187,16 +262,16 @@ function updateUser(user) {
         visiblePosts.forEach(post => {
             const article = document.createElement("article");
             article.className = "post-card";
-
             article.dataset.category = post.category;
 
+            // Header
             const header = document.createElement("div");
             header.className = "post-header";
 
             const avatar = document.createElement("div");
             avatar.className = "avatar avatar-purple";
             avatar.textContent =
-                post.isNew ? getAvatar() : post.author.charAt(0);
+                post.author.charAt(0).toUpperCase();
 
             const authorInfo = document.createElement("div");
             authorInfo.className = "post-author";
@@ -210,6 +285,7 @@ function updateUser(user) {
             authorInfo.append(author, details);
             header.append(avatar, authorInfo);
 
+            // Post content
             const body = document.createElement("div");
             body.className = "post-body";
 
@@ -218,12 +294,29 @@ function updateUser(user) {
 
             body.appendChild(paragraph);
 
+            // Optional image
+            if (post.image_url) {
+                const image = document.createElement("img");
+                image.src = post.image_url;
+                image.alt = "Post attachment";
+                image.loading = "lazy";
+                body.appendChild(image);
+            }
+
+            // Footer
             const footer = document.createElement("div");
             footer.className = "post-footer";
 
+            // Like button
             const likeButton = document.createElement("button");
+            likeButton.type = "button";
             likeButton.className =
                 "like-button" + (post.liked ? " liked" : "");
+
+            likeButton.setAttribute(
+                "aria-pressed",
+                String(post.liked)
+            );
 
             const likeIcon = document.createElement("i");
             likeIcon.setAttribute("data-lucide", "heart");
@@ -231,23 +324,22 @@ function updateUser(user) {
             const likeCount = document.createElement("span");
             likeCount.textContent = post.likes;
 
-            likeButton.setAttribute(
-                "aria-pressed",
-                String(post.liked)
-            );
-
             likeButton.append(likeIcon, likeCount);
 
             likeButton.addEventListener("click", () => {
                 post.liked = !post.liked;
+
                 post.likes = Math.max(
                     0,
                     post.likes + (post.liked ? 1 : -1)
                 );
+
                 renderPosts();
             });
 
+            // Comments button
             const commentButton = document.createElement("button");
+            commentButton.type = "button";
             commentButton.className = "comment-button";
 
             const commentIcon = document.createElement("i");
@@ -266,7 +358,9 @@ function updateUser(user) {
                 alert("Comments will be connected to Supabase next.");
             });
 
+            // Share button
             const shareButton = document.createElement("button");
+            shareButton.type = "button";
 
             const shareIcon = document.createElement("i");
             shareIcon.setAttribute("data-lucide", "repeat-2");
@@ -300,75 +394,85 @@ function updateUser(user) {
         }
     }
 
-// ==========================================
-// POST COMPOSER MODAL
-// ==========================================
+    // ==========================================
+    // FEED SEARCH AND FILTER
+    // ==========================================
 
-const modal = document.getElementById("postModal");
+    $("feedFilter")?.addEventListener("change", event => {
+        state.filter = event.target.value;
+        renderPosts();
+    });
 
-function openPostModal() {
-    if (!modal) {
-        console.error("Post modal #postModal was not found.");
-        return;
-    }
+    $("searchInput")?.addEventListener("input", event => {
+        state.search = event.target.value.toLowerCase().trim();
+        renderPosts();
+    });
 
-    modal.classList.add("active");
-    modal.setAttribute("aria-hidden", "false");
+    // ==========================================
+    // POST COMPOSER
+    // ==========================================
 
-    const input = document.getElementById("postContent");
+    const modal = $("postModal");
 
-    if (input) {
-        setTimeout(() => input.focus(), 100);
-    }
-}
+    function openPostModal() {
+        if (!modal) {
+            console.error("Post modal #postModal was not found.");
+            return;
+        }
 
-function closePostModal() {
-    if (!modal) return;
+        modal.classList.add("active");
+        modal.setAttribute("aria-hidden", "false");
 
-    modal.classList.remove("active");
-    modal.setAttribute("aria-hidden", "true");
-}
+        const input = $("postContent");
 
-// Open composer buttons
-document.addEventListener("click", function (event) {
-    const openButton = event.target.closest(
-        "#createPostBtn, #openPostComposer, #openPostModal, #discussionPostBtn, #studyPostBtn, #photoPostBtn"
-    );
+        if (input) {
+            setTimeout(() => input.focus(), 100);
+        }
+    }
 
-    if (openButton) {
-        event.preventDefault();
-        openPostModal();
-        return;
-    }
+    function closePostModal() {
+        if (!modal) return;
 
-    // Close button
-    const closeButton = event.target.closest(
-        "#closePostModal, #closePostComposer"
-    );
+        modal.classList.remove("active");
+        modal.setAttribute("aria-hidden", "true");
+    }
 
-    if (closeButton) {
-        event.preventDefault();
-        closePostModal();
-        return;
-    }
+    document.addEventListener("click", event => {
+        const target = event.target;
 
-    // Close when clicking outside the composer
-    if (event.target === modal) {
-        closePostModal();
-    }
-});
+        if (!(target instanceof Element)) return;
 
-// Close with Escape key
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-        closePostModal();
-    }
-});
+        const openButton = target.closest(
+            "#createPostBtn, #openPostComposer, #openPostModal, #discussionPostBtn, #studyPostBtn, #photoPostBtn"
+        );
 
+        if (openButton) {
+            event.preventDefault();
+            openPostModal();
+            return;
+        }
 
-  
-    
-    
+        const closeButton = target.closest(
+            "#closePostModal, #closePostComposer"
+        );
+
+        if (closeButton) {
+            event.preventDefault();
+            closePostModal();
+            return;
+        }
+
+        if (target === modal) {
+            closePostModal();
+        }
+    });
+
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            closePostModal();
+        }
+    });
+
     // ==========================================
     // PUBLISH POST TO SUPABASE
     // ==========================================
@@ -390,7 +494,10 @@ document.addEventListener("keydown", function (event) {
         }
 
         const db = window.CampusConnect?.db;
-        const user = window.CampusConnect?.getCurrentUser?.();
+
+        const user =
+            window.CampusConnect?.getCurrentUser?.() ||
+            state.user;
 
         if (!db || !user?.id) {
             alert("Please log in before publishing.");
@@ -417,10 +524,9 @@ document.addEventListener("keydown", function (event) {
 
             if (error) throw error;
 
-            
-
             const newPost = {
                 id: data.id,
+                user_id: data.user_id,
                 author: getUserName(),
                 username: getUsername(),
                 details: "Just now",
@@ -456,7 +562,10 @@ document.addEventListener("keydown", function (event) {
 
         } catch (error) {
             console.error("Publishing error:", error);
-            alert("Could not publish post: " + error.message);
+
+            alert(
+                "Could not publish post: " + error.message
+            );
 
         } finally {
             if (button) {
@@ -466,25 +575,23 @@ document.addEventListener("keydown", function (event) {
         }
     }
 
-    // Publish button event
     $("publishPost")?.addEventListener("click", event => {
         event.preventDefault();
         createPost();
     });
 
     // ==========================================
-    // INITIALIZE
+    // INITIALIZE APPLICATION
     // ==========================================
 
-    // Synchronize with an existing Supabase session
-const existingUser =
-    window.CampusConnect?.getCurrentUser?.();
+    const existingUser =
+        window.CampusConnect?.getCurrentUser?.();
 
-if (existingUser) {
-    updateUser(existingUser);
-} else {
-    renderPosts();
-}
+    if (existingUser) {
+        updateUser(existingUser);
+    } else {
+        renderPosts();
+    }
 
     console.log("CampusConnect application engine ready.");
 
