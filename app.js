@@ -863,6 +863,32 @@ async function createComment(post, input, button) {
 
             header.append(avatar, authorBox);
 
+// FOLLOW BUTTON
+if (post.user_id !== state.user?.id) {
+
+    const followButton = document.createElement("button");
+
+    followButton.type = "button";
+
+    followButton.className = "follow-button";
+
+    const isFollowing =
+        state.followingIds.has(post.user_id);
+
+    followButton.textContent =
+        isFollowing ? "Following" : "Follow";
+
+    if (isFollowing) {
+        followButton.classList.add("following");
+    }
+
+    followButton.addEventListener("click", () => {
+        toggleFollow(post.user_id, followButton);
+    });
+
+    header.appendChild(followButton);
+}
+
             // POST BODY
 
             const body = document.createElement("div");
