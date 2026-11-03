@@ -1034,21 +1034,29 @@
     }
 
     function openComposer() {
-        const modal = $("postModal");
+    const modal = $("postModal");
 
-        if (!modal) {
-            notify("Post composer was not found in index.html.");
-            return;
-        }
-
-        showMediaInput();
-        modal.classList.add("show");
-        $("postContent")?.focus();
+    if (!modal) {
+        notify("Post composer was not found.");
+        return;
     }
 
-    function closeComposer() {
-        $("postModal")?.classList.remove("show");
-    }
+    showMediaInput();
+
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+
+    $("postContent")?.focus();
+}
+
+function closeComposer() {
+    const modal = $("postModal");
+
+    if (!modal) return;
+
+    modal.classList.remove("active");
+    modal.setAttribute("aria-hidden", "true");
+}
 
     async function createPost() {
         if (!state.user || !db()) {
