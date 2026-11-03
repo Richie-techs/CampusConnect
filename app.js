@@ -476,13 +476,12 @@
     // ==========================================
 
      
-       
-       async function createComment(post, input, button) {
-
+async function createComment(post, input, button) {
     const content = input.value.trim();
+    const client = db();
 
-    if (!state.user) {
-        alert("Please log in before commenting.");
+    if (!client) {
+        alert("Supabase client is unavailable.");
         return;
     }
 
@@ -497,53 +496,65 @@
     button.textContent = "Sending...";
 
     try {
-        console.log("Submitting comment:", {
-            post_id: post.id,
-            user_id: state.user.id,
-            content: content
-        });
+        // Verify the actual authenticated Supabase user
+        const {
+            data: { user },
+            error: authError
+        } = await client.auth.getUser();
 
-        const { error } = await db()
+        if (authError) throw authError;
+
+        if (!user) {
+            throw new Error("You are not authenticated. Please log in again.");
+        }
+
+        console.log("Authenticated user:", user.id);
+        console.log("Post ID:", post.id);
+
+        // Ensure application state matches Supabase authentication
+        if (state.user?.id !== user.id) {
+            throw new Error(
+                "User ID mismatch. Please log out and log in again."
+            );
+        }
+
+        // Insert comment and return the saved record
+        const { data, error } = await client
             .from("comments")
             .insert({
                 post_id: post.id,
-                user_id: state.user.id,
+                user_id: user.id,
                 content: content
-            });
+            })
+            .select("id, post_id, user_id, content, created_at")
+            .single();
 
-        if (error) {
-            console.error("Supabase insert error:", error);
-            throw error;
-        }
+        if (error) throw error;
 
-        console.log("Comment successfully saved.");
+        console.log("COMMENT SUCCESSFULLY SAVED:", data);
 
         input.value = "";
-
         state.openComments.add(post.id);
 
-        try {
-            await loadInteractions();
-            renderPosts();
-        } catch (refreshError) {
-            console.error("Comment refresh error:", refreshError);
-            alert("Comment was saved, but the feed could not refresh. Reload the page.");
-        }
+        await loadInteractions();
+        renderPosts();
 
     } catch (error) {
-
-        console.error("Comment submission failed:", error);
+        console.error("COMMENT SUBMISSION ERROR:", error);
 
         alert("Comment failed: " + error.message);
 
     } finally {
-
         if (button.isConnected) {
             button.disabled = false;
             button.textContent = "Comment";
         }
     }
 }
+
+       
+      
+       
     // ==========================================
     // DELETE OWN COMMENTS
     // ==========================================
