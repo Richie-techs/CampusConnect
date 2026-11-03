@@ -18,7 +18,7 @@
         openComments: new Set(),
         channels: [],
         interactionVersion: 0,
-followingIds: new Set()
+        followingIds: new Set()
     };
 
     const BUCKET = "campus-posts";
