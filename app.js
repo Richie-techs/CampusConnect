@@ -583,8 +583,11 @@ document.addEventListener("keydown", function (event) {
     // INITIALIZE
     // ==========================================
 
+    if (state.user) {
     loadInitialPosts();
+} else {
     renderPosts();
+}
 
     console.log("CampusConnect application engine ready.");
 
