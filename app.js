@@ -195,11 +195,23 @@ loadMyProfile();
 
             if (state.user?.id !== requestedUserId) return;
 
-            const rows = data || [];
+           const rows = data || [];
 
-            const profiles = await getProfiles(
-                rows.map(post => post.user_id)
-            );
+// LOAD PEOPLE THE CURRENT USER FOLLOWS
+const { data: followingRows, error: followingError } = await db()
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", requestedUserId);
+
+if (followingError) throw followingError;
+
+state.followingIds = new Set(
+    (followingRows || []).map(row => row.following_id)
+);
+
+const profiles = await getProfiles(
+    rows.map(post => post.user_id)
+);
 
             state.posts = rows.map(post => {
                 const profile = profiles.get(post.user_id);
