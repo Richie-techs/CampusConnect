@@ -915,19 +915,121 @@
             </section>
 
 
-            <!-- PROFILE -->
-            <section class="page-section" id="page-profile">
-                <div class="page-heading">
-                    <p class="eyebrow">YOUR IDENTITY</p>
-                    <h1>My Profile</h1>
+            
+<!-- PROFILE -->
+<section class="page-section" id="page-profile">
+
+    <div class="page-heading">
+        <p class="eyebrow">YOUR IDENTITY</p>
+        <h1>My Profile</h1>
+        <p>Manage your identity and connect with your campus community.</p>
+    </div>
+
+    <div class="profile-container">
+
+        <!-- COVER PHOTO -->
+        <div class="profile-cover" id="profile-cover">
+            <img
+                id="profile-cover-image"
+                src=""
+                alt="Profile cover"
+                hidden
+            >
+        </div>
+
+        <!-- PROFILE INFORMATION -->
+        <div class="profile-main-card">
+
+            <div class="profile-avatar-wrapper">
+                <div class="profile-avatar" id="profile-avatar">
+                    CC
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="edit-profile-button">
+                    <i data-lucide="pencil"></i>
+                    Edit Profile
+                </button>
+            </div>
+
+            <div class="profile-identity">
+                <h2 id="profile-full-name">Loading profile...</h2>
+                <p id="profile-username">@username</p>
+
+                <p id="profile-bio">
+                    No biography added yet.
+                </p>
+            </div>
+
+            <div class="profile-academic-info">
+
+                <span id="profile-university">
+                    <i data-lucide="graduation-cap"></i>
+                    University
+                </span>
+
+                <span id="profile-department">
+                    <i data-lucide="book-open"></i>
+                    Department
+                </span>
+
+                <span id="profile-level">
+                    <i data-lucide="layers"></i>
+                    Study Level
+                </span>
+
+            </div>
+
+            <!-- FOLLOW STATISTICS -->
+            <div class="profile-stats">
+
+                <div>
+                    <strong id="profile-post-count">0</strong>
+                    <span>Posts</span>
                 </div>
 
-                <div class="empty-state">
-                    <i data-lucide="user-round"></i>
-                    <h3>Your student profile</h3>
-                    <p>Profile photos, biography, university, interests and posts will be available here.</p>
+                <div>
+                    <strong id="profile-followers-count">0</strong>
+                    <span>Followers</span>
                 </div>
-            </section>
+
+                <div>
+                    <strong id="profile-following-count">0</strong>
+                    <span>Following</span>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- USER POSTS -->
+        <div class="profile-posts-section">
+
+            <div class="section-header">
+                <h3>My Posts</h3>
+                <span>Your published updates</span>
+            </div>
+
+            <div id="profile-posts-container"
+                 class="posts-container">
+
+                <div class="empty-state">
+                    <i data-lucide="images"></i>
+                    <h3>Your posts will appear here</h3>
+                    <p>Share your thoughts with your campus community.</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
 
 
             <!-- SETTINGS -->
